@@ -262,6 +262,11 @@
   }
   $("btnEmbed").addEventListener("click", function () {
     $("embedBox").hidden = false;
+    if (window.__ROSEN_CSS__ && window.__ROSEN_JS__) {
+      $("embedCode").value = buildEmbed(window.__ROSEN_CSS__, window.__ROSEN_JS__);
+      $("embedBox").scrollIntoView({ behavior: "smooth", block: "nearest" });
+      return;
+    }
     Promise.all([
       fetch("rosen.css").then(function (r) { return r.text(); }).catch(function () { return null; }),
       fetch("rosen.js").then(function (r) { return r.text(); }).catch(function () { return null; })
