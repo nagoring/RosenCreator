@@ -35,7 +35,7 @@ label { font-size: 13px; }
 .editor-box { background: #faf7ee; border: 1px solid #eee3cb; border-radius: 10px; padding: 10px; margin-top: 10px; display: grid; gap: 8px; }
 .file-btn.block { display: block; text-align: center; margin-top: 8px; }
 .stage-wrap { min-width: 0; }
-#stage { background: #fff; border: 1px solid #ddd8ca; border-radius: 16px; padding: 10px; }
+#stage { background: #fff; border: 1px solid #ddd8ca; border-radius: 16px; padding: 0; overflow: hidden; }
 #stage .rosen-station { cursor: grab; }
 #stage .rosen-station.selected { outline: 3px solid #2f7fd0; outline-offset: 2px; }
 #stage .rosen-image { pointer-events: auto; cursor: grab; }

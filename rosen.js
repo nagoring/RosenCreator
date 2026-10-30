@@ -1,9 +1,8 @@
 /* RosenCreator - 埋め込み用レンダラー (依存ライブラリなし / iframe不使用)
-   使い方:
-     <link rel="stylesheet" href="rosen.css">
-     <div id="my-rosen"></div>
-     <script src="rosen.js"></script>
-     <script>RosenCreator.render(document.getElementById('my-rosen'), data);</script>
+   使い方: 表示先のHTMLに rosen.css を読み込む link タグと空の div を置き、
+   rosen.js を読み込んだあとで
+     RosenCreator.render(document.getElementById('my-rosen'), data);
+   を呼んでください。具体的なコード例は README を見てください。
    data形式:
      { width:1000, height:760, background:"#f7f3e8",
        stations:[{id:"s1", name:"新宿", x:410, y:360}],

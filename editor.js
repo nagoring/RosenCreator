@@ -63,7 +63,8 @@
   function dragHandler(ev, obj, el, kind) {
     ev.preventDefault();
     select(kind, obj.id);
-    var rect = stage.querySelector(".rosen-map").getBoundingClientRect();
+    var mapEl = stage.classList.contains("rosen-map") ? stage : stage.querySelector(".rosen-map");
+    var rect = mapEl.getBoundingClientRect();
     var moved = false;
     function move(e) {
       moved = true;
