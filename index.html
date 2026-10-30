@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RosenCreator - 沿線マップ作成</title>
+<link rel="stylesheet" href="rosen.css">
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+<header class="app-header">
+  <h1>RosenCreator <span>沿線マップ作成</span></h1>
+  <div class="header-actions">
+    <button id="btnSample" type="button">サンプルに戻す</button>
+    <button id="btnExportJson" type="button">JSONを書き出す</button>
+    <label class="file-btn">JSONを読み込む<input id="fileImportJson" type="file" accept=".json,application/json" hidden></label>
+    <button id="btnEmbed" type="button" class="primary">埋め込みコードを作る</button>
+  </div>
+</header>
+
+<div class="layout">
+  <aside class="panel">
+    <section>
+      <h2>マップ</h2>
+      <label>背景色 <input id="mapBg" type="color" value="#f7f3e8"></label>
+      <p class="hint">駅・画像はマップ上でドラッグして移動できます。作業は自動でこのブラウザに保存されます。</p>
+    </section>
+
+    <section>
+      <h2>駅を登録</h2>
+      <div class="row">
+        <input id="stationName" type="text" placeholder="駅名（例：新宿）">
+        <button id="btnAddStation" type="button" class="primary">追加</button>
+      </div>
+      <ul id="stationList" class="item-list"></ul>
+      <div id="stationEditor" class="editor-box" hidden>
+        <h3>駅を編集</h3>
+        <label>駅名 <input id="editStationName" type="text"></label>
+        <div class="row">
+          <label>X <input id="editStationX" type="number" min="0" max="1000"></label>
+          <label>Y <input id="editStationY" type="number" min="0" max="760"></label>
+        </div>
+        <button id="btnDeleteStation" type="button" class="danger">この駅を削除</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>路線を作る</h2>
+      <div class="row">
+        <input id="lineName" type="text" placeholder="路線名（例：中央線）">
+        <input id="lineColor" type="color" value="#e67e22" title="路線の色">
+        <button id="btnAddLine" type="button" class="primary">追加</button>
+      </div>
+      <ul id="lineList" class="item-list"></ul>
+      <div id="lineEditor" class="editor-box" hidden>
+        <h3>路線を編集</h3>
+        <label>路線名 <input id="editLineName" type="text"></label>
+        <div class="row">
+          <label>色 <input id="editLineColor" type="color"></label>
+          <label>太さ <input id="editLineWidth" type="range" min="4" max="20" step="1"></label>
+          <label class="check"><input id="editLineClosed" type="checkbox"> 環状（始点と終点をつなぐ）</label>
+        </div>
+        <button id="btnPickStations" type="button" class="primary">駅をクリックして追加する： OFF</button>
+        <p class="hint">ONの間、マップ上の駅をクリックした順に路線へ追加されます。</p>
+        <ol id="lineStations" class="ordered-list"></ol>
+        <button id="btnDeleteLine" type="button" class="danger">この路線を削除</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>画像を挿入</h2>
+      <div class="row">
+        <input id="imageUrl" type="url" placeholder="画像URL（https://...）">
+        <button id="btnAddImageUrl" type="button" class="primary">追加</button>
+      </div>
+      <label class="file-btn block">画像ファイルをアップロード<input id="fileImage" type="file" accept="image/*" hidden></label>
+      <p class="hint">ランドマークやイラストを置けます。アップロードした画像はデータに埋め込まれます（大きい画像はJSONも大きくなります）。</p>
+      <ul id="imageList" class="item-list"></ul>
+      <div id="imageEditor" class="editor-box" hidden>
+        <h3>画像を編集</h3>
+        <label>幅 <input id="editImageWidth" type="range" min="30" max="500" step="5"></label>
+        <button id="btnDeleteImage" type="button" class="danger">この画像を削除</button>
+      </div>
+    </section>
+  </aside>
+
+  <main class="stage-wrap">
+    <div id="stage"></div>
+    <section id="embedBox" class="embed-box" hidden>
+      <h2>埋め込みコード（iframeなし）</h2>
+      <p class="hint">下のコードを、表示したいページのHTMLにそのまま貼ってください。CSSとJSの中身を含んだ自己完結版なので、RosenCreatorのファイルを別途置く必要はありません。貼る場所に合わせて <code>&lt;div id="rosen-embed-1"&gt;</code> の部分だけ置き、このコードはその直後（またはページ末尾）でも動きます。</p>
+      <textarea id="embedCode" readonly rows="12" spellcheck="false"></textarea>
+      <div class="row">
+        <button id="btnCopyEmbed" type="button" class="primary">コードをコピー</button>
+        <button id="btnDownloadEmbed" type="button">embed.htmlとしてダウンロード</button>
+        <button id="btnCloseEmbed" type="button">閉じる</button>
+      </div>
+      <p id="copyResult" class="hint" role="status"></p>
+    </section>
+  </main>
+</div>
+
+<script src="rosen.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

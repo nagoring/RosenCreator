@@ -1,0 +1,44 @@
+/* RosenCreator エディタ用スタイル (埋め込みには含まれません) */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif; background: #eceae4; color: #22252d; }
+.app-header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between; padding: 12px 18px; background: #fff; border-bottom: 1px solid #ddd8ca; }
+.app-header h1 { font-size: 20px; margin: 0; }
+.app-header h1 span { font-size: 13px; color: #777; font-weight: 500; margin-left: 6px; }
+.header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+button, .file-btn { font: inherit; font-size: 13px; border: 1px solid #c9c3b2; background: #fff; border-radius: 8px; padding: 7px 12px; cursor: pointer; }
+button:hover, .file-btn:hover { background: #f4f0e4; }
+button.primary { background: #e8833a; border-color: #e8833a; color: #fff; font-weight: 700; }
+button.primary:hover { background: #d9742a; }
+button.danger { color: #b3352b; border-color: #e0b3ae; }
+button.active { outline: 2px solid #e8833a; }
+input[type="text"], input[type="url"], input[type="number"] { font: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid #c9c3b2; border-radius: 8px; min-width: 0; flex: 1; }
+input[type="color"] { width: 38px; height: 32px; border: 1px solid #c9c3b2; border-radius: 8px; background: #fff; padding: 2px; }
+.layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; padding: 16px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+.panel { background: #fff; border: 1px solid #ddd8ca; border-radius: 14px; padding: 6px 16px 16px; }
+.panel section { border-bottom: 1px solid #eee8d8; padding: 12px 0; }
+.panel section:last-child { border-bottom: none; }
+.panel h2 { font-size: 15px; margin: 4px 0 10px; }
+.panel h3 { font-size: 13px; margin: 0 0 8px; }
+.row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
+.row label { display: flex; gap: 6px; align-items: center; font-size: 13px; flex: 1; }
+label { font-size: 13px; }
+.hint { font-size: 12px; color: #777; line-height: 1.6; }
+.item-list, .ordered-list { list-style: none; margin: 8px 0; padding: 0; }
+.ordered-list { list-style: decimal inside; }
+.item-list li, .ordered-list li { display: flex; gap: 6px; align-items: center; padding: 6px 8px; border-radius: 8px; font-size: 13px; cursor: pointer; }
+.item-list li:hover, .ordered-list li:hover { background: #f7f3e8; }
+.item-list li.selected { background: #fdeeda; outline: 1px solid #e8833a; }
+.item-list .swatch { width: 14px; height: 14px; border-radius: 50%; flex: none; }
+.item-list .grow, .ordered-list .grow { flex: 1; }
+.item-list button, .ordered-list button { padding: 2px 8px; font-size: 12px; }
+.editor-box { background: #faf7ee; border: 1px solid #eee3cb; border-radius: 10px; padding: 10px; margin-top: 10px; display: grid; gap: 8px; }
+.file-btn.block { display: block; text-align: center; margin-top: 8px; }
+.stage-wrap { min-width: 0; }
+#stage { background: #fff; border: 1px solid #ddd8ca; border-radius: 16px; padding: 10px; }
+#stage .rosen-station { cursor: grab; }
+#stage .rosen-station.selected { outline: 3px solid #2f7fd0; outline-offset: 2px; }
+#stage .rosen-image { pointer-events: auto; cursor: grab; }
+#stage .rosen-image.selected { outline: 3px solid #2f7fd0; outline-offset: 2px; }
+.embed-box { margin-top: 16px; background: #fff; border: 1px solid #ddd8ca; border-radius: 14px; padding: 16px; }
+.embed-box textarea { width: 100%; font-family: ui-monospace, Menlo, monospace; font-size: 11px; padding: 10px; border: 1px solid #c9c3b2; border-radius: 8px; background: #fbfaf6; }

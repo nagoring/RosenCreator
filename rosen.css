@@ -1,0 +1,39 @@
+/* RosenCreator - 埋め込み用マップのスタイル (単体でコピペ可能) */
+.rosen-map {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: #f7f3e8;
+  border-radius: 16px;
+  container-type: inline-size;
+  font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Noto Sans JP", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.rosen-map * { box-sizing: border-box; margin: 0; padding: 0; }
+.rosen-map svg.rosen-lines {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  pointer-events: none;
+}
+.rosen-map .rosen-line-path {
+  fill: none; stroke-linecap: round; stroke-linejoin: round;
+}
+.rosen-map .rosen-image {
+  position: absolute; transform: translate(-50%, -50%);
+  pointer-events: none; user-select: none;
+}
+.rosen-map .rosen-image img {
+  display: block; width: 100%; height: auto; pointer-events: none;
+}
+.rosen-map .rosen-station {
+  position: absolute; transform: translate(-50%, -50%);
+  background: #fff; color: #1f2430;
+  border: 0.28cqw solid #e8833a;
+  border-radius: 999px;
+  padding: 0.55cqw 1.5cqw;
+  font-size: 1.7cqw; font-weight: 700; line-height: 1.25;
+  white-space: nowrap;
+  box-shadow: 0 0.2cqw 0.5cqw rgba(60, 40, 10, .08);
+}
+@media (max-width: 560px) {
+  .rosen-map .rosen-station { font-size: 2.4cqw; padding: 0.4cqw 1cqw; }
+}
