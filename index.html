@@ -23,7 +23,7 @@
     <section>
       <h2>マップ</h2>
       <label>背景色 <input id="mapBg" type="color" value="#f7f3e8"></label>
-      <p class="hint">駅・画像はマップ上でドラッグして移動できます。作業は自動でこのブラウザに保存されます。</p>
+      <p class="hint">駅・画像はマップ上でドラッグして移動できます。マップの何もない所をクリックすると、その場所に駅・曲げ点・新しい路線・画像を追加するメニューが出ます。作業は自動でこのブラウザに保存されます。</p>
     </section>
 
     <section>
@@ -46,6 +46,7 @@
 
     <section>
       <h2>路線を作る</h2>
+      <p class="hint">駅の両端にある丸（ポート）をドラッグして別の駅のポートに落とすと、その2駅を接続できます。ポートをクリック→別のポートをクリックでも接続できます。選択中の路線の端の駅から引くとその路線が延長され、離れた所で引くと新しい路線になります。</p>
       <div class="row">
         <input id="lineName" type="text" placeholder="路線名（例：中央線）">
         <input id="lineColor" type="color" value="#e67e22" title="路線の色">
@@ -60,6 +61,23 @@
           <label>太さ <input id="editLineWidth" type="range" min="4" max="20" step="1"></label>
           <label class="check"><input id="editLineClosed" type="checkbox"> 環状（始点と終点をつなぐ）</label>
         </div>
+        <div class="row">
+          <label>形
+            <select id="editLineShape">
+              <option value="smooth">曲線</option>
+              <option value="straight">直線</option>
+            </select>
+          </label>
+          <label>線種
+            <select id="editLineStyle">
+              <option value="solid">実線</option>
+              <option value="dashed">破線</option>
+              <option value="dotted">点線</option>
+            </select>
+          </label>
+        </div>
+        <label>曲がり具合 <input id="editLineSmooth" type="range" min="0" max="100" step="5"></label>
+        <p class="hint">路線を選択すると、線の途中に「＋」が出ます。押すと曲げ点が追加され、○印の曲げ点をドラッグすると線を自由に曲げられます。曲げ点はダブルクリックで削除、下の一覧でも並び替え・削除ができます。</p>
         <button id="btnPickStations" type="button" class="primary">駅をクリックして追加する： OFF</button>
         <p class="hint">ONの間、マップ上の駅をクリックした順に路線へ追加されます。</p>
         <ol id="lineStations" class="ordered-list"></ol>
@@ -86,6 +104,7 @@
 
   <main class="stage-wrap">
     <div id="stage"></div>
+    <p id="connectStatus" class="connect-status" role="status"></p>
     <section id="embedBox" class="embed-box" hidden>
       <h2>埋め込みコード（iframeなし）</h2>
       <p class="hint">下のコードを、表示したいページのHTMLにそのまま貼ってください。CSSとJSの中身を含んだ自己完結版なので、RosenCreatorのファイルを別途置く必要はありません。貼る場所に合わせて <code>&lt;div id="rosen-embed-1"&gt;</code> の部分だけ置き、このコードはその直後（またはページ末尾）でも動きます。</p>

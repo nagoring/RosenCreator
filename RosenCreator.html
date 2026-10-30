@@ -62,12 +62,18 @@ button.danger { color: #b3352b; border-color: #e0b3ae; }
 button.active { outline: 2px solid #e8833a; }
 input[type="text"], input[type="url"], input[type="number"] { font: inherit; font-size: 13px; padding: 7px 9px; border: 1px solid #c9c3b2; border-radius: 8px; min-width: 0; flex: 1; }
 input[type="color"] { width: 38px; height: 32px; border: 1px solid #c9c3b2; border-radius: 8px; background: #fff; padding: 2px; }
+select { font: inherit; font-size: 13px; padding: 6px 8px; border: 1px solid #c9c3b2; border-radius: 8px; background: #fff; }
 .layout { display: grid; grid-template-columns: 340px 1fr; gap: 16px; padding: 16px; align-items: start; }
 @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
 .panel { background: #fff; border: 1px solid #ddd8ca; border-radius: 14px; padding: 6px 16px 16px; }
 .panel section { border-bottom: 1px solid #eee8d8; padding: 12px 0; }
 .panel section:last-child { border-bottom: none; }
 .panel h2 { font-size: 15px; margin: 4px 0 10px; }
+.panel section.collapsible > h2 { cursor: pointer; user-select: none; position: relative; padding-right: 20px; }
+.panel section.collapsible > h2::after { content: "▾"; position: absolute; right: 2px; top: 1px; color: #b3a284; font-size: 12px; }
+.panel section.collapsible.collapsed > h2 { margin-bottom: 0; }
+.panel section.collapsible.collapsed > h2::after { content: "▸"; }
+.panel section.collapsible.collapsed > :not(h2) { display: none !important; }
 .panel h3 { font-size: 13px; margin: 0 0 8px; }
 .row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin: 8px 0; }
 .row label { display: flex; gap: 6px; align-items: center; font-size: 13px; flex: 1; }
@@ -85,10 +91,32 @@ label { font-size: 13px; }
 .file-btn.block { display: block; text-align: center; margin-top: 8px; }
 .stage-wrap { min-width: 0; }
 #stage { background: #fff; border: 1px solid #ddd8ca; border-radius: 16px; padding: 0; overflow: hidden; }
+#stage svg.rosen-lines { pointer-events: auto; }
+#stage .rosen-line-path { pointer-events: none; }
+#stage .rosen-line-hit { pointer-events: stroke; cursor: pointer; }
+.line-label { position: absolute; transform: translate(-50%, -160%); background: #888; border: 2px solid #fff; color: #fff; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; pointer-events: none; z-index: 7; box-shadow: 0 3px 10px rgba(60, 40, 10, .25); }
 #stage .rosen-station { cursor: grab; }
 #stage .rosen-station.selected { outline: 3px solid #2f7fd0; outline-offset: 2px; }
 #stage .rosen-image { pointer-events: auto; cursor: grab; }
 #stage .rosen-image.selected { outline: 3px solid #2f7fd0; outline-offset: 2px; }
+.map-menu { position: fixed; z-index: 50; width: 240px; background: #fff; border: 1px solid #ddd8ca; border-radius: 12px; box-shadow: 0 10px 30px rgba(40, 30, 10, .22); padding: 10px; display: grid; gap: 8px; }
+.map-menu h4 { margin: 0; font-size: 12px; color: #777; font-weight: 600; }
+.map-menu button { text-align: left; }
+.map-menu button:disabled { opacity: .45; cursor: default; }
+.map-menu .row { margin: 0; }
+.connect-status { min-height: 20px; margin: 8px 2px 0; font-size: 13px; color: #2f6fb3; font-weight: 600; }
+.station-port { position: absolute; top: 50%; width: 13px; height: 13px; border-radius: 50%; background: #fff; border: 3px solid #e8833a; transform: translateY(-50%); cursor: crosshair; z-index: 8; opacity: .28; transition: opacity .15s ease; }
+.station-port.port-left { left: -8px; }
+.station-port.port-right { right: -8px; }
+.rosen-station:hover { z-index: 9; }
+.rosen-station:hover .station-port { opacity: 1; }
+.station-port:hover, .station-port.port-hover { background: #2f7fd0; border-color: #2f7fd0; opacity: 1; }
+.station-port.port-pending { background: #e8833a; border-color: #b35c14; opacity: 1; }
+svg.connect-overlay { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; }
+.connect-wire { fill: none; stroke-width: 4; stroke-dasharray: 10 7; stroke-linecap: round; opacity: .9; }
+.bend-handle { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: #fff; border: 3px solid #888; transform: translate(-50%, -50%); cursor: grab; z-index: 6; }
+.seg-add { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: #2f7fd0; color: #fff; font-size: 12px; line-height: 16px; text-align: center; transform: translate(-50%, -50%); cursor: pointer; z-index: 6; opacity: .55; }
+.seg-add:hover { opacity: 1; }
 .embed-box { margin-top: 16px; background: #fff; border: 1px solid #ddd8ca; border-radius: 14px; padding: 16px; }
 .embed-box textarea { width: 100%; font-family: ui-monospace, Menlo, monospace; font-size: 11px; padding: 10px; border: 1px solid #c9c3b2; border-radius: 8px; background: #fbfaf6; }
 
@@ -110,7 +138,7 @@ label { font-size: 13px; }
     <section>
       <h2>マップ</h2>
       <label>背景色 <input id="mapBg" type="color" value="#f7f3e8"></label>
-      <p class="hint">駅・画像はマップ上でドラッグして移動できます。作業は自動でこのブラウザに保存されます。</p>
+      <p class="hint">駅・画像はマップ上でドラッグして移動できます。マップの何もない所をクリックすると、その場所に駅・曲げ点・新しい路線・画像を追加するメニューが出ます。作業は自動でこのブラウザに保存されます。</p>
     </section>
 
     <section>
@@ -133,6 +161,7 @@ label { font-size: 13px; }
 
     <section>
       <h2>路線を作る</h2>
+      <p class="hint">駅の両端にある丸（ポート）をドラッグして別の駅のポートに落とすと、その2駅を接続できます。ポートをクリック→別のポートをクリックでも接続できます。選択中の路線の端の駅から引くとその路線が延長され、離れた所で引くと新しい路線になります。</p>
       <div class="row">
         <input id="lineName" type="text" placeholder="路線名（例：中央線）">
         <input id="lineColor" type="color" value="#e67e22" title="路線の色">
@@ -147,6 +176,23 @@ label { font-size: 13px; }
           <label>太さ <input id="editLineWidth" type="range" min="4" max="20" step="1"></label>
           <label class="check"><input id="editLineClosed" type="checkbox"> 環状（始点と終点をつなぐ）</label>
         </div>
+        <div class="row">
+          <label>形
+            <select id="editLineShape">
+              <option value="smooth">曲線</option>
+              <option value="straight">直線</option>
+            </select>
+          </label>
+          <label>線種
+            <select id="editLineStyle">
+              <option value="solid">実線</option>
+              <option value="dashed">破線</option>
+              <option value="dotted">点線</option>
+            </select>
+          </label>
+        </div>
+        <label>曲がり具合 <input id="editLineSmooth" type="range" min="0" max="100" step="5"></label>
+        <p class="hint">路線を選択すると、線の途中に「＋」が出ます。押すと曲げ点が追加され、○印の曲げ点をドラッグすると線を自由に曲げられます。曲げ点はダブルクリックで削除、下の一覧でも並び替え・削除ができます。</p>
         <button id="btnPickStations" type="button" class="primary">駅をクリックして追加する： OFF</button>
         <p class="hint">ONの間、マップ上の駅をクリックした順に路線へ追加されます。</p>
         <ol id="lineStations" class="ordered-list"></ol>
@@ -173,6 +219,7 @@ label { font-size: 13px; }
 
   <main class="stage-wrap">
     <div id="stage"></div>
+    <p id="connectStatus" class="connect-status" role="status"></p>
     <section id="embedBox" class="embed-box" hidden>
       <h2>埋め込みコード（iframeなし）</h2>
       <p class="hint">下のコードを、表示したいページのHTMLにそのまま貼ってください。CSSとJSの中身を含んだ自己完結版なので、RosenCreatorのファイルを別途置く必要はありません。貼る場所に合わせて <code>&lt;div id="rosen-embed-1"&gt;</code> の部分だけ置き、このコードはその直後（またはページ末尾）でも動きます。</p>
@@ -189,7 +236,7 @@ label { font-size: 13px; }
 
 <script>
 window.__ROSEN_CSS__ = "/* RosenCreator - \u57cb\u3081\u8fbc\u307f\u7528\u30de\u30c3\u30d7\u306e\u30b9\u30bf\u30a4\u30eb (\u5358\u4f53\u3067\u30b3\u30d4\u30da\u53ef\u80fd) */\n.rosen-map {\n  position: relative;\n  width: 100%;\n  overflow: hidden;\n  background: #f7f3e8;\n  border-radius: 16px;\n  container-type: inline-size;\n  font-family: \"Hiragino Kaku Gothic ProN\", \"Hiragino Sans\", \"Noto Sans JP\", sans-serif;\n  -webkit-font-smoothing: antialiased;\n}\n.rosen-map * { box-sizing: border-box; margin: 0; padding: 0; }\n.rosen-map svg.rosen-lines {\n  position: absolute; inset: 0; width: 100%; height: 100%;\n  pointer-events: none;\n}\n.rosen-map .rosen-line-path {\n  fill: none; stroke-linecap: round; stroke-linejoin: round;\n}\n.rosen-map .rosen-image {\n  position: absolute; transform: translate(-50%, -50%);\n  pointer-events: none; user-select: none;\n}\n.rosen-map .rosen-image img {\n  display: block; width: 100%; height: auto; pointer-events: none;\n}\n.rosen-map .rosen-station {\n  position: absolute; transform: translate(-50%, -50%);\n  background: #fff; color: #1f2430;\n  border: 0.28cqw solid #e8833a;\n  border-radius: 999px;\n  padding: 0.55cqw 1.5cqw;\n  font-size: 1.7cqw; font-weight: 700; line-height: 1.25;\n  white-space: nowrap;\n  box-shadow: 0 0.2cqw 0.5cqw rgba(60, 40, 10, .08);\n}\n@media (max-width: 560px) {\n  .rosen-map .rosen-station { font-size: 2.4cqw; padding: 0.4cqw 1cqw; }\n}\n";
-window.__ROSEN_JS__ = "/* RosenCreator - \u57cb\u3081\u8fbc\u307f\u7528\u30ec\u30f3\u30c0\u30e9\u30fc (\u4f9d\u5b58\u30e9\u30a4\u30d6\u30e9\u30ea\u306a\u3057 / iframe\u4e0d\u4f7f\u7528)\n   \u4f7f\u3044\u65b9: \u8868\u793a\u5148\u306eHTML\u306b rosen.css \u3092\u8aad\u307f\u8fbc\u3080 link \u30bf\u30b0\u3068\u7a7a\u306e div \u3092\u7f6e\u304d\u3001\n   rosen.js \u3092\u8aad\u307f\u8fbc\u3093\u3060\u3042\u3068\u3067\n     RosenCreator.render(document.getElementById('my-rosen'), data);\n   \u3092\u547c\u3093\u3067\u304f\u3060\u3055\u3044\u3002\u5177\u4f53\u7684\u306a\u30b3\u30fc\u30c9\u4f8b\u306f README \u3092\u898b\u3066\u304f\u3060\u3055\u3044\u3002\n   data\u5f62\u5f0f:\n     { width:1000, height:760, background:\"#f7f3e8\",\n       stations:[{id:\"s1\", name:\"\u65b0\u5bbf\", x:410, y:360}],\n       lines:[{id:\"l1\", name:\"\u4e2d\u592e\u7dda\", color:\"#e67e22\", width:10, closed:false, stationIds:[\"s1\",\"s2\"]}],\n       images:[{id:\"i1\", src:\"https://.../a.png\", x:800, y:200, width:140, alt:\"\"}] }\n   \u5ea7\u6a19\u306f width x height \u306e\u4eee\u60f3\u30ad\u30e3\u30f3\u30d0\u30b9\u4e0a\u306e\u5024\u3067\u3059\u3002 */\n(function (global) {\n  \"use strict\";\n\n  function smoothPath(points, closed) {\n    if (!points.length) return \"\";\n    if (points.length === 1) {\n      var p = points[0];\n      return \"M \" + p.x + \" \" + p.y + \" L \" + (p.x + 0.1) + \" \" + p.y;\n    }\n    if (points.length === 2 || !closed && points.length === 2) {\n      return \"M \" + points.map(function (q) { return q.x + \" \" + q.y; }).join(\" L \");\n    }\n    var pts = points.slice();\n    if (closed) { pts = [points[points.length - 1]].concat(points, [points[0], points[1]]); }\n    else { pts = [points[0]].concat(points, [points[points.length - 1]]); }\n    var d = \"M \" + pts[1].x + \" \" + pts[1].y;\n    for (var i = 1; i \u003c pts.length - 2; i++) {\n      var p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2];\n      var c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;\n      var c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;\n      d += \" C \" + c1x.toFixed(1) + \" \" + c1y.toFixed(1) + \", \" + c2x.toFixed(1) + \" \" + c2y.toFixed(1) + \", \" + p2.x + \" \" + p2.y;\n    }\n    if (closed) d += \" Z\";\n    return d;\n  }\n\n  function stationById(data, id) {\n    for (var i = 0; i \u003c (data.stations || []).length; i++) {\n      if (data.stations[i].id === id) return data.stations[i];\n    }\n    return null;\n  }\n\n  function linePathD(data, line) {\n    var pts = (line.stationIds || []).map(function (id) { return stationById(data, id); }).filter(Boolean);\n    return smoothPath(pts, !!line.closed);\n  }\n\n  function render(el, data) {\n    if (!el || !data) return;\n    var W = data.width || 1000, H = data.height || 760;\n    el.classList.add(\"rosen-map\");\n    el.style.background = data.background || \"#f7f3e8\";\n    el.style.aspectRatio = W + \" / \" + H;\n    el.innerHTML = \"\";\n\n    var svgNS = \"http://www.w3.org/2000/svg\";\n    var svg = document.createElementNS(svgNS, \"svg\");\n    svg.setAttribute(\"class\", \"rosen-lines\");\n    svg.setAttribute(\"viewBox\", \"0 0 \" + W + \" \" + H);\n    svg.setAttribute(\"preserveAspectRatio\", \"none\");\n    (data.lines || []).forEach(function (line) {\n      if (!line.stationIds || line.stationIds.length \u003c 2) return;\n      var path = document.createElementNS(svgNS, \"path\");\n      path.setAttribute(\"class\", \"rosen-line-path\");\n      path.setAttribute(\"data-line-id\", line.id);\n      path.setAttribute(\"d\", linePathD(data, line));\n      path.setAttribute(\"stroke\", line.color || \"#888\");\n      path.setAttribute(\"stroke-width\", line.width || 10);\n      svg.appendChild(path);\n    });\n    el.appendChild(svg);\n\n    (data.images || []).forEach(function (im) {\n      var wrap = document.createElement(\"div\");\n      wrap.className = \"rosen-image\";\n      wrap.setAttribute(\"data-image-id\", im.id);\n      wrap.style.left = (im.x / W * 100) + \"%\";\n      wrap.style.top = (im.y / H * 100) + \"%\";\n      wrap.style.width = (im.width / W * 100) + \"%\";\n      var img = document.createElement(\"img\");\n      img.src = im.src; img.alt = im.alt || \"\";\n      wrap.appendChild(img);\n      el.appendChild(wrap);\n    });\n\n    (data.stations || []).forEach(function (st) {\n      var d = document.createElement(\"div\");\n      d.className = \"rosen-station\";\n      d.setAttribute(\"data-station-id\", st.id);\n      d.style.left = (st.x / W * 100) + \"%\";\n      d.style.top = (st.y / H * 100) + \"%\";\n      d.textContent = st.name;\n      el.appendChild(d);\n    });\n    el._rosenData = data;\n    return el;\n  }\n\n  global.RosenCreator = {\n    render: render,\n    smoothPath: smoothPath,\n    linePathD: linePathD,\n    stationById: stationById\n  };\n})(typeof window !== \"undefined\" ? window : this);\n";
+window.__ROSEN_JS__ = "/* RosenCreator - \u57cb\u3081\u8fbc\u307f\u7528\u30ec\u30f3\u30c0\u30e9\u30fc (\u4f9d\u5b58\u30e9\u30a4\u30d6\u30e9\u30ea\u306a\u3057 / iframe\u4e0d\u4f7f\u7528)\n   \u4f7f\u3044\u65b9: \u8868\u793a\u5148\u306eHTML\u306b rosen.css \u3092\u8aad\u307f\u8fbc\u3080 link \u30bf\u30b0\u3068\u7a7a\u306e div \u3092\u7f6e\u304d\u3001\n   rosen.js \u3092\u8aad\u307f\u8fbc\u3093\u3060\u3042\u3068\u3067\n     RosenCreator.render(document.getElementById('my-rosen'), data);\n   \u3092\u547c\u3093\u3067\u304f\u3060\u3055\u3044\u3002\u5177\u4f53\u7684\u306a\u30b3\u30fc\u30c9\u4f8b\u306f README \u3092\u898b\u3066\u304f\u3060\u3055\u3044\u3002\n   data\u5f62\u5f0f:\n     { width:1000, height:760, background:\"#f7f3e8\",\n       stations:[{id:\"s1\", name:\"\u65b0\u5bbf\", x:410, y:360}],\n       lines:[{id:\"l1\", name:\"\u4e2d\u592e\u7dda\", color:\"#e67e22\", width:10, closed:false,\n               shape:\"smooth\", smoothness:50, style:\"solid\",\n               nodes:[{type:\"station\", id:\"s1\"}, {type:\"point\", x:500, y:300}, {type:\"station\", id:\"s2\"}]}],\n       images:[{id:\"i1\", src:\"https://.../a.png\", x:800, y:200, width:140, alt:\"\"}] }\n   nodes \u306f\u99c5 (type:\"station\") \u3068\u66f2\u3052\u70b9 (type:\"point\") \u306e\u4e26\u3073\u3067\u3059\u3002\n   \u53e4\u3044 stationIds \u5f62\u5f0f\u3082\u305d\u306e\u307e\u307e\u4f7f\u3048\u307e\u3059\u3002\n   \u5ea7\u6a19\u306f width x height \u306e\u4eee\u60f3\u30ad\u30e3\u30f3\u30d0\u30b9\u4e0a\u306e\u5024\u3067\u3059\u3002 */\n(() => {\n  \"use strict\";\n\n  const smoothPath = (points, closed = false, factor = 1 / 6) => {\n    if (points.length === 0) return \"\";\n    if (points.length === 1) {\n      const [p] = points;\n      return `M ${p.x} ${p.y} L ${p.x + 0.1} ${p.y}`;\n    }\n    if (points.length === 2) {\n      return `M ${points.map(({ x, y }) => `${x} ${y}`).join(\" L \")}`;\n    }\n    const pts = closed\n      ? [points.at(-1), ...points, points[0], points[1]]\n      : [points[0], ...points, points.at(-1)];\n    let d = `M ${pts[1].x} ${pts[1].y}`;\n    for (let i = 1; i \u003c pts.length - 2; i++) {\n      const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2];\n      const c1 = { x: p1.x + (p2.x - p0.x) * factor, y: p1.y + (p2.y - p0.y) * factor };\n      const c2 = { x: p2.x - (p3.x - p1.x) * factor, y: p2.y - (p3.y - p1.y) * factor };\n      d += ` C ${c1.x.toFixed(1)} ${c1.y.toFixed(1)}, ${c2.x.toFixed(1)} ${c2.y.toFixed(1)}, ${p2.x} ${p2.y}`;\n    }\n    return closed ? `${d} Z` : d;\n  };\n\n  const stationById = (data, id) => (data.stations ?? []).find((s) => s.id === id) ?? null;\n\n  const lineNodes = (line) =>\n    line.nodes?.length\n      ? line.nodes\n      : (line.stationIds ?? []).map((id) => ({ type: \"station\", id }));\n\n  const resolveLinePoints = (data, line) =>\n    lineNodes(line)\n      .map((node) => {\n        if (node.type === \"point\") return { x: node.x, y: node.y };\n        const station = stationById(data, node.id);\n        return station ? { x: station.x, y: station.y } : null;\n      })\n      .filter(Boolean);\n\n  const linePathD = (data, line) => {\n    const pts = resolveLinePoints(data, line);\n    if (pts.length \u003c 2) return \"\";\n    if (line.shape === \"straight\") {\n      const d = `M ${pts.map(({ x, y }) => `${x} ${y}`).join(\" L \")}`;\n      return line.closed ? `${d} Z` : d;\n    }\n    const smoothness = typeof line.smoothness === \"number\" ? line.smoothness : 50;\n    return smoothPath(pts, Boolean(line.closed), smoothness / 300);\n  };\n\n  // target \u306b\u6700\u3082\u8fd1\u3044\u533a\u9593 (\u59cb\u70b9\u306e\u30a4\u30f3\u30c7\u30c3\u30af\u30b9) \u3092\u8fd4\u3059\u3002\u66f2\u3052\u70b9\u306e\u633f\u5165\u4f4d\u7f6e\u6c7a\u3081\u7528\u3002\n  const nearestSegmentIndex = (points, closed, target) => {\n    const segCount = closed ? points.length : points.length - 1;\n    let best = -1;\n    let bestDist = Infinity;\n    for (let i = 0; i \u003c segCount; i++) {\n      const a = points[i];\n      const b = points[(i + 1) % points.length];\n      if (!a || !b) continue;\n      const dx = b.x - a.x;\n      const dy = b.y - a.y;\n      const lenSq = dx * dx + dy * dy;\n      const t = lenSq === 0 ? 0 : clamp01(((target.x - a.x) * dx + (target.y - a.y) * dy) / lenSq);\n      const px = a.x + dx * t;\n      const py = a.y + dy * t;\n      const dist = Math.hypot(target.x - px, target.y - py);\n      if (dist \u003c bestDist) { bestDist = dist; best = i; }\n    }\n    return best;\n  };\n  const clamp01 = (v) => Math.max(0, Math.min(1, v));\n\n  const render = (el, data) => {\n    if (!el || !data) return el;\n    const W = data.width || 1000;\n    const H = data.height || 760;\n    el.classList.add(\"rosen-map\");\n    el.style.background = data.background || \"#f7f3e8\";\n    el.style.aspectRatio = `${W} / ${H}`;\n    el.innerHTML = \"\";\n\n    const svgNS = \"http://www.w3.org/2000/svg\";\n    const svg = document.createElementNS(svgNS, \"svg\");\n    svg.setAttribute(\"class\", \"rosen-lines\");\n    svg.setAttribute(\"viewBox\", `0 0 ${W} ${H}`);\n    svg.setAttribute(\"preserveAspectRatio\", \"none\");\n\n    for (const line of data.lines ?? []) {\n      if (resolveLinePoints(data, line).length \u003c 2) continue;\n      const path = document.createElementNS(svgNS, \"path\");\n      path.setAttribute(\"class\", \"rosen-line-path\");\n      path.dataset.lineId = line.id;\n      path.setAttribute(\"d\", linePathD(data, line));\n      path.setAttribute(\"stroke\", line.color || \"#888\");\n      path.setAttribute(\"stroke-width\", line.width || 10);\n      const w = line.width || 10;\n      if (line.style === \"dashed\") path.setAttribute(\"stroke-dasharray\", `${w * 2.2} ${w * 1.4}`);\n      if (line.style === \"dotted\") path.setAttribute(\"stroke-dasharray\", `0.1 ${w * 1.9}`);\n      if (line.name) {\n        const title = document.createElementNS(svgNS, \"title\");\n        title.textContent = line.name;\n        path.appendChild(title);\n      }\n      svg.appendChild(path);\n    }\n    el.appendChild(svg);\n\n    for (const image of data.images ?? []) {\n      const wrap = document.createElement(\"div\");\n      wrap.className = \"rosen-image\";\n      wrap.dataset.imageId = image.id;\n      wrap.style.left = `${(image.x / W) * 100}%`;\n      wrap.style.top = `${(image.y / H) * 100}%`;\n      wrap.style.width = `${(image.width / W) * 100}%`;\n      const img = document.createElement(\"img\");\n      img.src = image.src;\n      img.alt = image.alt || \"\";\n      wrap.appendChild(img);\n      el.appendChild(wrap);\n    }\n\n    for (const station of data.stations ?? []) {\n      const div = document.createElement(\"div\");\n      div.className = \"rosen-station\";\n      div.dataset.stationId = station.id;\n      div.style.left = `${(station.x / W) * 100}%`;\n      div.style.top = `${(station.y / H) * 100}%`;\n      div.textContent = station.name;\n      el.appendChild(div);\n    }\n\n    el._rosenData = data;\n    return el;\n  };\n\n  globalThis.RosenCreator = { render, smoothPath, linePathD, lineNodes, resolveLinePoints, stationById, nearestSegmentIndex };\n})();\n";
 </script>
 <script>
 /* RosenCreator - 埋め込み用レンダラー (依存ライブラリなし / iframe不使用)
@@ -200,399 +247,1148 @@ window.__ROSEN_JS__ = "/* RosenCreator - \u57cb\u3081\u8fbc\u307f\u7528\u30ec\u3
    data形式:
      { width:1000, height:760, background:"#f7f3e8",
        stations:[{id:"s1", name:"新宿", x:410, y:360}],
-       lines:[{id:"l1", name:"中央線", color:"#e67e22", width:10, closed:false, stationIds:["s1","s2"]}],
+       lines:[{id:"l1", name:"中央線", color:"#e67e22", width:10, closed:false,
+               shape:"smooth", smoothness:50, style:"solid",
+               nodes:[{type:"station", id:"s1"}, {type:"point", x:500, y:300}, {type:"station", id:"s2"}]}],
        images:[{id:"i1", src:"https://.../a.png", x:800, y:200, width:140, alt:""}] }
+   nodes は駅 (type:"station") と曲げ点 (type:"point") の並びです。
+   古い stationIds 形式もそのまま使えます。
    座標は width x height の仮想キャンバス上の値です。 */
-(function (global) {
+(() => {
   "use strict";
 
-  function smoothPath(points, closed) {
-    if (!points.length) return "";
+  const smoothPath = (points, closed = false, factor = 1 / 6) => {
+    if (points.length === 0) return "";
     if (points.length === 1) {
-      var p = points[0];
-      return "M " + p.x + " " + p.y + " L " + (p.x + 0.1) + " " + p.y;
+      const [p] = points;
+      return `M ${p.x} ${p.y} L ${p.x + 0.1} ${p.y}`;
     }
-    if (points.length === 2 || !closed && points.length === 2) {
-      return "M " + points.map(function (q) { return q.x + " " + q.y; }).join(" L ");
+    if (points.length === 2) {
+      return `M ${points.map(({ x, y }) => `${x} ${y}`).join(" L ")}`;
     }
-    var pts = points.slice();
-    if (closed) { pts = [points[points.length - 1]].concat(points, [points[0], points[1]]); }
-    else { pts = [points[0]].concat(points, [points[points.length - 1]]); }
-    var d = "M " + pts[1].x + " " + pts[1].y;
-    for (var i = 1; i < pts.length - 2; i++) {
-      var p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2];
-      var c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
-      var c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
-      d += " C " + c1x.toFixed(1) + " " + c1y.toFixed(1) + ", " + c2x.toFixed(1) + " " + c2y.toFixed(1) + ", " + p2.x + " " + p2.y;
+    const pts = closed
+      ? [points.at(-1), ...points, points[0], points[1]]
+      : [points[0], ...points, points.at(-1)];
+    let d = `M ${pts[1].x} ${pts[1].y}`;
+    for (let i = 1; i < pts.length - 2; i++) {
+      const p0 = pts[i - 1], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2];
+      const c1 = { x: p1.x + (p2.x - p0.x) * factor, y: p1.y + (p2.y - p0.y) * factor };
+      const c2 = { x: p2.x - (p3.x - p1.x) * factor, y: p2.y - (p3.y - p1.y) * factor };
+      d += ` C ${c1.x.toFixed(1)} ${c1.y.toFixed(1)}, ${c2.x.toFixed(1)} ${c2.y.toFixed(1)}, ${p2.x} ${p2.y}`;
     }
-    if (closed) d += " Z";
-    return d;
-  }
+    return closed ? `${d} Z` : d;
+  };
 
-  function stationById(data, id) {
-    for (var i = 0; i < (data.stations || []).length; i++) {
-      if (data.stations[i].id === id) return data.stations[i];
+  const stationById = (data, id) => (data.stations ?? []).find((s) => s.id === id) ?? null;
+
+  const lineNodes = (line) =>
+    line.nodes?.length
+      ? line.nodes
+      : (line.stationIds ?? []).map((id) => ({ type: "station", id }));
+
+  const resolveLinePoints = (data, line) =>
+    lineNodes(line)
+      .map((node) => {
+        if (node.type === "point") return { x: node.x, y: node.y };
+        const station = stationById(data, node.id);
+        return station ? { x: station.x, y: station.y } : null;
+      })
+      .filter(Boolean);
+
+  const linePathD = (data, line) => {
+    const pts = resolveLinePoints(data, line);
+    if (pts.length < 2) return "";
+    if (line.shape === "straight") {
+      const d = `M ${pts.map(({ x, y }) => `${x} ${y}`).join(" L ")}`;
+      return line.closed ? `${d} Z` : d;
     }
-    return null;
-  }
+    const smoothness = typeof line.smoothness === "number" ? line.smoothness : 50;
+    return smoothPath(pts, Boolean(line.closed), smoothness / 300);
+  };
 
-  function linePathD(data, line) {
-    var pts = (line.stationIds || []).map(function (id) { return stationById(data, id); }).filter(Boolean);
-    return smoothPath(pts, !!line.closed);
-  }
+  // target に最も近い区間 (始点のインデックス) を返す。曲げ点の挿入位置決め用。
+  const nearestSegmentIndex = (points, closed, target) => {
+    const segCount = closed ? points.length : points.length - 1;
+    let best = -1;
+    let bestDist = Infinity;
+    for (let i = 0; i < segCount; i++) {
+      const a = points[i];
+      const b = points[(i + 1) % points.length];
+      if (!a || !b) continue;
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const lenSq = dx * dx + dy * dy;
+      const t = lenSq === 0 ? 0 : clamp01(((target.x - a.x) * dx + (target.y - a.y) * dy) / lenSq);
+      const px = a.x + dx * t;
+      const py = a.y + dy * t;
+      const dist = Math.hypot(target.x - px, target.y - py);
+      if (dist < bestDist) { bestDist = dist; best = i; }
+    }
+    return best;
+  };
+  const clamp01 = (v) => Math.max(0, Math.min(1, v));
 
-  function render(el, data) {
-    if (!el || !data) return;
-    var W = data.width || 1000, H = data.height || 760;
+  const render = (el, data) => {
+    if (!el || !data) return el;
+    const W = data.width || 1000;
+    const H = data.height || 760;
     el.classList.add("rosen-map");
     el.style.background = data.background || "#f7f3e8";
-    el.style.aspectRatio = W + " / " + H;
+    el.style.aspectRatio = `${W} / ${H}`;
     el.innerHTML = "";
 
-    var svgNS = "http://www.w3.org/2000/svg";
-    var svg = document.createElementNS(svgNS, "svg");
+    const svgNS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(svgNS, "svg");
     svg.setAttribute("class", "rosen-lines");
-    svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
     svg.setAttribute("preserveAspectRatio", "none");
-    (data.lines || []).forEach(function (line) {
-      if (!line.stationIds || line.stationIds.length < 2) return;
-      var path = document.createElementNS(svgNS, "path");
+
+    for (const line of data.lines ?? []) {
+      if (resolveLinePoints(data, line).length < 2) continue;
+      const path = document.createElementNS(svgNS, "path");
       path.setAttribute("class", "rosen-line-path");
-      path.setAttribute("data-line-id", line.id);
+      path.dataset.lineId = line.id;
       path.setAttribute("d", linePathD(data, line));
       path.setAttribute("stroke", line.color || "#888");
       path.setAttribute("stroke-width", line.width || 10);
+      const w = line.width || 10;
+      if (line.style === "dashed") path.setAttribute("stroke-dasharray", `${w * 2.2} ${w * 1.4}`);
+      if (line.style === "dotted") path.setAttribute("stroke-dasharray", `0.1 ${w * 1.9}`);
+      if (line.name) {
+        const title = document.createElementNS(svgNS, "title");
+        title.textContent = line.name;
+        path.appendChild(title);
+      }
       svg.appendChild(path);
-    });
+    }
     el.appendChild(svg);
 
-    (data.images || []).forEach(function (im) {
-      var wrap = document.createElement("div");
+    for (const image of data.images ?? []) {
+      const wrap = document.createElement("div");
       wrap.className = "rosen-image";
-      wrap.setAttribute("data-image-id", im.id);
-      wrap.style.left = (im.x / W * 100) + "%";
-      wrap.style.top = (im.y / H * 100) + "%";
-      wrap.style.width = (im.width / W * 100) + "%";
-      var img = document.createElement("img");
-      img.src = im.src; img.alt = im.alt || "";
+      wrap.dataset.imageId = image.id;
+      wrap.style.left = `${(image.x / W) * 100}%`;
+      wrap.style.top = `${(image.y / H) * 100}%`;
+      wrap.style.width = `${(image.width / W) * 100}%`;
+      const img = document.createElement("img");
+      img.src = image.src;
+      img.alt = image.alt || "";
       wrap.appendChild(img);
       el.appendChild(wrap);
-    });
+    }
 
-    (data.stations || []).forEach(function (st) {
-      var d = document.createElement("div");
-      d.className = "rosen-station";
-      d.setAttribute("data-station-id", st.id);
-      d.style.left = (st.x / W * 100) + "%";
-      d.style.top = (st.y / H * 100) + "%";
-      d.textContent = st.name;
-      el.appendChild(d);
-    });
+    for (const station of data.stations ?? []) {
+      const div = document.createElement("div");
+      div.className = "rosen-station";
+      div.dataset.stationId = station.id;
+      div.style.left = `${(station.x / W) * 100}%`;
+      div.style.top = `${(station.y / H) * 100}%`;
+      div.textContent = station.name;
+      el.appendChild(div);
+    }
+
     el._rosenData = data;
     return el;
-  }
-
-  global.RosenCreator = {
-    render: render,
-    smoothPath: smoothPath,
-    linePathD: linePathD,
-    stationById: stationById
   };
-})(typeof window !== "undefined" ? window : this);
+
+  globalThis.RosenCreator = { render, smoothPath, linePathD, lineNodes, resolveLinePoints, stationById, nearestSegmentIndex };
+})();
 
 </script>
 <script>
 /* RosenCreator エディタ */
-(function () {
+(() => {
   "use strict";
-  var STORAGE_KEY = "rosencreator-data-v1";
-  var uid = function (p) { return p + Math.random().toString(36).slice(2, 9); };
 
-  function sampleData() {
-    function S(name, x, y) { return { id: uid("s"), name: name, x: x, y: y }; }
-    var st = {};
-    [["国分寺",70,290],["三鷹",180,300],["吉祥寺",255,275],["中野",355,320],["新宿",415,360],
-     ["池袋",515,220],["大久保",415,315],["御茶ノ水",625,365],["秋葉原",725,375],["原宿",460,465],
-     ["品川",670,520],["大宮",535,40],["南浦和",635,120],["王子",695,210],["蒲田",595,625],
-     ["川崎",565,675],["関内（馬車道）",475,720],["下北沢",260,450],["三軒茶屋",400,510],
-     ["中目黒",445,555],["自由が丘",390,610],["武蔵小杉",300,640]
-    ].forEach(function (a) { st[a[0]] = S(a[0], a[1], a[2]); });
-    function ids(names) { return names.map(function (n) { return st[n].id; }); }
+  const STORAGE_KEY = "rosencreator-data-v1";
+  const uid = (prefix) => `${prefix}${Math.random().toString(36).slice(2, 9)}`;
+  const $ = (id) => document.getElementById(id);
+  const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+
+  const sampleData = () => {
+    const stationDefs = [
+      ["国分寺", 70, 290], ["三鷹", 180, 300], ["吉祥寺", 255, 275], ["中野", 355, 320], ["新宿", 415, 360],
+      ["池袋", 515, 220], ["大久保", 415, 315], ["御茶ノ水", 625, 365], ["秋葉原", 725, 375], ["原宿", 460, 465],
+      ["品川", 670, 520], ["大宮", 535, 40], ["南浦和", 635, 120], ["王子", 695, 210], ["蒲田", 595, 625],
+      ["川崎", 565, 675], ["関内（馬車道）", 475, 720], ["下北沢", 260, 450], ["三軒茶屋", 400, 510],
+      ["中目黒", 445, 555], ["自由が丘", 390, 610], ["武蔵小杉", 300, 640],
+    ];
+    const byName = new Map(stationDefs.map(([name, x, y]) => [name, { id: uid("s"), name, x, y }]));
+    const nodesOf = (names) => names.map((name) => ({ type: "station", id: byName.get(name).id }));
+    const makeLine = (name, color, width, closed, stationNames) => ({
+      id: uid("l"), name, color, width, closed,
+      shape: "smooth", smoothness: 50, style: "solid",
+      nodes: nodesOf(stationNames),
+      stationIds: stationNames.map((n) => byName.get(n).id),
+    });
     return {
       width: 1000, height: 760, background: "#f7f3e8",
-      stations: Object.values(st),
+      stations: [...byName.values()],
       lines: [
-        { id: uid("l"), name: "山手線", color: "#80c241", width: 11, closed: true, stationIds: ids(["池袋","新宿","原宿","品川","秋葉原"]) },
-        { id: uid("l"), name: "中央線", color: "#e67e22", width: 10, closed: false, stationIds: ids(["国分寺","三鷹","吉祥寺","中野","新宿","御茶ノ水","秋葉原"]) },
-        { id: uid("l"), name: "京浜東北線", color: "#5bb2e0", width: 10, closed: false, stationIds: ids(["大宮","南浦和","王子","秋葉原","品川","蒲田","川崎","関内（馬車道）"]) },
-        { id: uid("l"), name: "南西方面", color: "#c0396b", width: 9, closed: false, stationIds: ids(["下北沢","三軒茶屋","中目黒","自由が丘","武蔵小杉"]) }
+        makeLine("山手線", "#80c241", 11, true, ["池袋", "新宿", "原宿", "品川", "秋葉原"]),
+        makeLine("中央線", "#e67e22", 10, false, ["国分寺", "三鷹", "吉祥寺", "中野", "新宿", "御茶ノ水", "秋葉原"]),
+        makeLine("京浜東北線", "#5bb2e0", 10, false, ["大宮", "南浦和", "王子", "秋葉原", "品川", "蒲田", "川崎", "関内（馬車道）"]),
+        makeLine("南西方面", "#c0396b", 9, false, ["下北沢", "三軒茶屋", "中目黒", "自由が丘", "武蔵小杉"]),
       ],
-      images: []
+      images: [],
     };
-  }
+  };
 
-  var data;
-  try { data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || sampleData(); }
-  catch (e) { data = sampleData(); }
-  if (!data.stations) data = sampleData();
+  const loadData = () => {
+    try {
+      return JSON.parse(localStorage.getItem(STORAGE_KEY)) ?? sampleData();
+    } catch {
+      return sampleData();
+    }
+  };
 
-  var selected = { type: null, id: null }; // type: station|line|image
-  var picking = false;
+  let data = loadData();
+  if (!data.stations || !data.lines) data = sampleData();
 
-  var $ = function (id) { return document.getElementById(id); };
-  var stage = $("stage");
+  let selected = { type: null, id: null };
+  let picking = false;
+  let pendingImagePos = null;
+  let mapMenu = null;
+  let pendingConnect = null;
+  let statusTimer = null;
+  let mapMenuClosedAt = 0;
 
-  function save() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch (e) {} }
-  function findStation(id) { return data.stations.find(function (s) { return s.id === id; }); }
-  function findLine(id) { return data.lines.find(function (l) { return l.id === id; }); }
-  function findImage(id) { return data.images.find(function (i) { return i.id === id; }); }
+  const setStatus = (message) => {
+    const el = $("connectStatus");
+    if (!el) return;
+    el.textContent = message;
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => { el.textContent = ""; }, 5000);
+  };
+
+  const stage = $("stage");
+  const save = () => {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); } catch { /* 保存できなくても編集は続ける */ }
+  };
+  const findStation = (id) => data.stations.find((s) => s.id === id);
+  const findLine = (id) => data.lines.find((l) => l.id === id);
+  const findImage = (id) => data.images.find((i) => i.id === id);
+
+  const syncLine = (line) => {
+    line.stationIds = RosenCreator.lineNodes(line)
+      .filter((node) => node.type === "station")
+      .map((node) => node.id);
+  };
+  const ensureLine = (line) => {
+    line.nodes ??= (line.stationIds ?? []).map((id) => ({ type: "station", id }));
+    line.smoothness ??= 50;
+    line.shape ??= "smooth";
+    line.style ??= "solid";
+    syncLine(line);
+  };
+  data.lines.forEach(ensureLine);
+
+  const select = (type, id) => {
+    selected = { type, id };
+    if (type !== "line") picking = false;
+  };
 
   /* ---------- 描画 ---------- */
-  function render() {
+  const render = () => {
     RosenCreator.render(stage, data);
-    stage.querySelectorAll(".rosen-station").forEach(function (el) {
-      var id = el.getAttribute("data-station-id");
+
+    stage.querySelectorAll(".rosen-line-path").forEach((path) => {
+      const hit = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      hit.setAttribute("class", "rosen-line-hit");
+      hit.setAttribute("d", path.getAttribute("d"));
+      hit.dataset.lineId = path.dataset.lineId;
+      hit.setAttribute("stroke", "rgba(0, 0, 0, 0)");
+      hit.setAttribute("stroke-width", (Number(path.getAttribute("stroke-width")) || 10) + 18);
+      hit.setAttribute("fill", "none");
+      hit.setAttribute("stroke-linecap", "round");
+      path.parentNode.appendChild(hit);
+      hit.addEventListener("click", (ev) => {
+        ev.stopPropagation();
+        if (Date.now() - mapMenuClosedAt < 400) return;
+        closeMapMenu();
+        select("line", hit.dataset.lineId);
+        render();
+      });
+    });
+    stage.querySelectorAll(".rosen-station").forEach((el) => {
+      const { stationId: id } = el.dataset;
       if (selected.type === "station" && selected.id === id) el.classList.add("selected");
-      el.addEventListener("pointerdown", function (ev) { onStationPointer(ev, id, el); });
+      el.addEventListener("pointerdown", (ev) => onStationPointer(ev, id, el));
     });
-    stage.querySelectorAll(".rosen-image").forEach(function (el) {
-      var id = el.getAttribute("data-image-id");
+    stage.querySelectorAll(".rosen-image").forEach((el) => {
+      const { imageId: id } = el.dataset;
       if (selected.type === "image" && selected.id === id) el.classList.add("selected");
-      el.addEventListener("pointerdown", function (ev) { onImagePointer(ev, id, el); });
+      el.addEventListener("pointerdown", (ev) => {
+        const image = findImage(id);
+        if (image) dragPoint(ev, image, el, () => select("image", id));
+      });
     });
+
+    renderStationPorts();
+    renderBendHandles();
+    renderLineLabel();
     renderLists();
     renderEditors();
-  }
+  };
 
-  function dragHandler(ev, obj, el, kind) {
-    ev.preventDefault();
-    select(kind, obj.id);
-    var mapEl = stage.classList.contains("rosen-map") ? stage : stage.querySelector(".rosen-map");
-    var rect = mapEl.getBoundingClientRect();
-    var moved = false;
-    function move(e) {
-      moved = true;
-      var x = (e.clientX - rect.left) / rect.width * data.width;
-      var y = (e.clientY - rect.top) / rect.height * data.height;
-      obj.x = Math.round(Math.max(0, Math.min(data.width, x)));
-      obj.y = Math.round(Math.max(0, Math.min(data.height, y)));
-      el.style.left = (obj.x / data.width * 100) + "%";
-      el.style.top = (obj.y / data.height * 100) + "%";
-      if (kind === "station") {
-        stage.querySelectorAll(".rosen-line-path").forEach(function (p) {
-          var line = findLine(p.getAttribute("data-line-id"));
-          if (line) p.setAttribute("d", RosenCreator.linePathD(data, line));
-        });
+  const renderStationPorts = () => {
+    stage.querySelectorAll(".rosen-station").forEach((el) => {
+      const { stationId } = el.dataset;
+      for (const side of ["left", "right"]) {
+        const port = document.createElement("span");
+        port.className = `station-port port-${side}`;
+        port.dataset.stationId = stationId;
+        port.title = "ドラッグ（またはクリック→クリック）で別の駅と接続";
+        if (pendingConnect?.stationId === stationId) port.classList.add("port-pending");
+        port.addEventListener("pointerdown", (ev) => onPortPointerDown(ev, stationId));
+        el.appendChild(port);
       }
+    });
+  };
+
+  const lineMidPoint = (line) => {
+    const points = RosenCreator.resolveLinePoints(data, line);
+    if (points.length === 0) return null;
+    const segCount = line.closed ? points.length : points.length - 1;
+    if (segCount < 1) return points[0];
+    const lengths = [];
+    let total = 0;
+    for (let i = 0; i < segCount; i++) {
+      const a = points[i];
+      const b = points[(i + 1) % points.length];
+      const len = Math.hypot(b.x - a.x, b.y - a.y);
+      lengths.push(len);
+      total += len;
     }
-    function up() {
+    let rest = total / 2;
+    for (let i = 0; i < segCount; i++) {
+      if (rest <= lengths[i]) {
+        const a = points[i];
+        const b = points[(i + 1) % points.length];
+        const t = lengths[i] === 0 ? 0 : rest / lengths[i];
+        return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+      }
+      rest -= lengths[i];
+    }
+    return points.at(-1);
+  };
+
+  const renderLineLabel = () => {
+    if (selected.type !== "line") return;
+    const line = findLine(selected.id);
+    if (!line) return;
+    const mid = lineMidPoint(line);
+    if (!mid) return;
+    const label = document.createElement("div");
+    label.className = "line-label";
+    label.textContent = line.name;
+    label.style.left = `${(mid.x / data.width) * 100}%`;
+    label.style.top = `${(mid.y / data.height) * 100}%`;
+    label.style.background = line.color;
+    stage.appendChild(label);
+  };
+
+  const renderBendHandles = () => {
+    if (selected.type !== "line") return;
+    const line = findLine(selected.id);
+    if (!line) return;
+    ensureLine(line);
+
+    const points = RosenCreator.resolveLinePoints(data, line);
+    const segCount = line.closed ? points.length : points.length - 1;
+    for (let i = 0; i < segCount; i++) {
+      const a = points[i];
+      const b = points[(i + 1) % points.length];
+      if (!a || !b) continue;
+      if (Math.hypot(b.x - a.x, b.y - a.y) < 120) continue; // 短い区間では＋を出さない (駅に重なって邪魔になるため)
+      const handle = document.createElement("div");
+      handle.className = "seg-add";
+      handle.textContent = "+";
+      handle.title = "ここに曲げ点を追加";
+      handle.style.left = `${(((a.x + b.x) / 2) / data.width) * 100}%`;
+      handle.style.top = `${(((a.y + b.y) / 2) / data.height) * 100}%`;
+      handle.addEventListener("pointerdown", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        line.nodes.splice(i + 1, 0, { type: "point", x: Math.round((a.x + b.x) / 2), y: Math.round((a.y + b.y) / 2) });
+        syncLine(line);
+        save();
+        render();
+      });
+      stage.appendChild(handle);
+    }
+
+    line.nodes.forEach((node, index) => {
+      if (node.type !== "point") return;
+      const handle = document.createElement("div");
+      handle.className = "bend-handle";
+      handle.title = "曲げ点（ドラッグで移動／ダブルクリックで削除）";
+      handle.style.left = `${(node.x / data.width) * 100}%`;
+      handle.style.top = `${(node.y / data.height) * 100}%`;
+      handle.style.borderColor = line.color;
+      handle.addEventListener("pointerdown", (ev) => dragPoint(ev, node, handle));
+      handle.addEventListener("dblclick", () => {
+        line.nodes.splice(index, 1);
+        syncLine(line);
+        save();
+        render();
+      });
+      stage.appendChild(handle);
+    });
+  };
+
+  /* ---------- ドラッグ ---------- */
+  const dragPoint = (ev, target, el, onStart) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+    onStart?.();
+    const mapEl = stage.classList.contains("rosen-map") ? stage : stage.querySelector(".rosen-map");
+    const rect = mapEl.getBoundingClientRect();
+
+    const move = (e) => {
+      target.x = Math.round(clamp(((e.clientX - rect.left) / rect.width) * data.width, 0, data.width));
+      target.y = Math.round(clamp(((e.clientY - rect.top) / rect.height) * data.height, 0, data.height));
+      el.style.left = `${(target.x / data.width) * 100}%`;
+      el.style.top = `${(target.y / data.height) * 100}%`;
+      stage.querySelectorAll(".rosen-line-path, .rosen-line-hit").forEach((path) => {
+        const line = findLine(path.dataset.lineId);
+        if (line) path.setAttribute("d", RosenCreator.linePathD(data, line));
+      });
+    };
+    const up = () => {
       window.removeEventListener("pointermove", move);
       window.removeEventListener("pointerup", up);
-      save(); render();
-    }
+      save();
+      render();
+    };
     window.addEventListener("pointermove", move);
     window.addEventListener("pointerup", up);
-  }
-  function onStationPointer(ev, id, el) {
+  };
+
+  const onStationPointer = (ev, id, el) => {
     if (picking && selected.type === "line") {
       ev.preventDefault();
-      var line = findLine(selected.id);
-      if (line && line.stationIds[line.stationIds.length - 1] !== id) {
-        line.stationIds.push(id); save(); render();
+      const line = findLine(selected.id);
+      if (!line) return;
+      ensureLine(line);
+      const last = line.nodes.at(-1);
+      if (!(last?.type === "station" && last.id === id)) {
+        line.nodes.push({ type: "station", id });
+        syncLine(line);
+        save();
+        render();
       }
       return;
     }
-    var s = findStation(id); if (s) dragHandler(ev, s, el, "station");
-  }
-  function onImagePointer(ev, id, el) { var im = findImage(id); if (im) dragHandler(ev, im, el, "image"); }
+    const station = findStation(id);
+    if (station) dragPoint(ev, station, el, () => select("station", id));
+  };
 
-  function select(type, id) { selected = { type: type, id: id }; if (type !== "line") picking = false; }
+  /* ---------- ブループリント風の駅接続 ---------- */
+  const LINE_COLORS = ["#e67e22", "#80c241", "#5bb2e0", "#c0396b", "#8e44ad", "#16a085"];
 
-  /* ---------- 一覧 ---------- */
-  function renderLists() {
-    var sl = $("stationList"); sl.innerHTML = "";
-    data.stations.forEach(function (s) {
-      var li = document.createElement("li");
-      if (selected.type === "station" && selected.id === s.id) li.className = "selected";
-      li.innerHTML = "<span class='grow'></span>";
-      li.querySelector(".grow").textContent = s.name;
-      li.addEventListener("click", function () { select("station", s.id); render(); });
-      sl.appendChild(li);
-    });
-    var ll = $("lineList"); ll.innerHTML = "";
-    data.lines.forEach(function (l) {
-      var li = document.createElement("li");
-      if (selected.type === "line" && selected.id === l.id) li.className = "selected";
-      li.innerHTML = "<span class='swatch'></span><span class='grow'></span>";
-      li.querySelector(".swatch").style.background = l.color;
-      li.querySelector(".grow").textContent = l.name + "（" + l.stationIds.length + "駅）";
-      li.addEventListener("click", function () { select("line", l.id); render(); });
-      ll.appendChild(li);
-    });
-    var il = $("imageList"); il.innerHTML = "";
-    data.images.forEach(function (im, idx) {
-      var li = document.createElement("li");
-      if (selected.type === "image" && selected.id === im.id) li.className = "selected";
-      li.innerHTML = "<span class='grow'></span>";
-      li.querySelector(".grow").textContent = im.alt || ("画像 " + (idx + 1));
-      li.addEventListener("click", function () { select("image", im.id); render(); });
-      il.appendChild(li);
-    });
-  }
+  const createLineForConnection = () => {
+    const line = {
+      id: uid("l"),
+      name: `路線${data.lines.length + 1}`,
+      color: LINE_COLORS[data.lines.length % LINE_COLORS.length],
+      width: 10, closed: false,
+      shape: "smooth", smoothness: 50, style: "solid",
+      nodes: [], stationIds: [],
+    };
+    data.lines.push(line);
+    return line;
+  };
 
-  /* ---------- 編集パネル ---------- */
-  function renderEditors() {
-    var s = selected.type === "station" ? findStation(selected.id) : null;
-    $("stationEditor").hidden = !s;
-    if (s) { $("editStationName").value = s.name; $("editStationX").value = s.x; $("editStationY").value = s.y; }
+  const stationNodeIndex = (line, stationId) =>
+    RosenCreator.lineNodes(line).findIndex((node) => node.type === "station" && node.id === stationId);
 
-    var l = selected.type === "line" ? findLine(selected.id) : null;
-    $("lineEditor").hidden = !l;
-    if (l) {
-      $("editLineName").value = l.name; $("editLineColor").value = l.color;
-      $("editLineWidth").value = l.width || 10; $("editLineClosed").checked = !!l.closed;
-      $("btnPickStations").textContent = "駅をクリックして追加する： " + (picking ? "ON" : "OFF");
-      $("btnPickStations").classList.toggle("active", picking);
-      var ol = $("lineStations"); ol.innerHTML = "";
-      l.stationIds.forEach(function (sid, i) {
-        var stn = findStation(sid);
-        var li = document.createElement("li");
-        li.innerHTML = "<span class='grow'></span>";
-        li.querySelector(".grow").textContent = stn ? stn.name : "(削除済み)";
-        [["↑", -1], ["↓", 1]].forEach(function (mv) {
-          var b = document.createElement("button"); b.type = "button"; b.textContent = mv[0];
-          b.addEventListener("click", function () {
-            var j = i + mv[1]; if (j < 0 || j >= l.stationIds.length) return;
-            var t = l.stationIds[i]; l.stationIds[i] = l.stationIds[j]; l.stationIds[j] = t; save(); render();
-          });
-          li.appendChild(b);
-        });
-        var del = document.createElement("button"); del.type = "button"; del.textContent = "外す";
-        del.addEventListener("click", function () { l.stationIds.splice(i, 1); save(); render(); });
-        li.appendChild(del);
-        ol.appendChild(li);
-      });
+  const connectStations = (fromId, toId) => {
+    if (fromId === toId) return;
+    const fromName = findStation(fromId)?.name ?? "?";
+    const toName = findStation(toId)?.name ?? "?";
+    let line = selected.type === "line" ? findLine(selected.id) : null;
+    if (line) ensureLine(line);
+
+    const needsNewLine = () => {
+      line = createLineForConnection();
+      line.nodes.push({ type: "station", id: fromId }, { type: "station", id: toId });
+      return line;
+    };
+
+    if (!line) {
+      needsNewLine();
+    } else {
+      const nodes = line.nodes;
+      const fi = stationNodeIndex(line, fromId);
+      const ti = stationNodeIndex(line, toId);
+      if (fi >= 0 && ti >= 0) {
+        setStatus(Math.abs(fi - ti) === 1
+          ? `${line.name}では ${fromName} と ${toName} はすでに接続されています`
+          : `${line.name}内では離れた駅同士を直接はつなげません（分岐は未対応です）`);
+        return;
+      }
+      if (fi < 0 && ti < 0) {
+        if (nodes.length >= 2) needsNewLine();
+        else nodes.push({ type: "station", id: fromId }, { type: "station", id: toId });
+      } else if (fi >= 0) {
+        if (fi === 0 && nodes.length > 1) nodes.unshift({ type: "station", id: toId });
+        else if (fi === nodes.length - 1) nodes.push({ type: "station", id: toId });
+        else needsNewLine();
+      } else {
+        if (ti === 0 && nodes.length > 1) nodes.unshift({ type: "station", id: fromId });
+        else if (ti === nodes.length - 1) nodes.push({ type: "station", id: fromId });
+        else needsNewLine();
+      }
     }
 
-    var im = selected.type === "image" ? findImage(selected.id) : null;
-    $("imageEditor").hidden = !im;
-    if (im) $("editImageWidth").value = im.width;
-  }
+    syncLine(line);
+    select("line", line.id);
+    picking = false;
+    pendingConnect = null;
+    save();
+    render();
+    setStatus(`${line.name}に ${fromName} → ${toName} を接続しました`);
+  };
 
-  /* ---------- イベント ---------- */
-  $("mapBg").value = data.background || "#f7f3e8";
-  $("mapBg").addEventListener("input", function () { data.background = this.value; save(); render(); });
-
-  $("btnAddStation").addEventListener("click", function () {
-    var name = $("stationName").value.trim(); if (!name) return;
-    var s = { id: uid("s"), name: name, x: 120 + Math.round(Math.random() * 120), y: 120 + Math.round(Math.random() * 120) };
-    data.stations.push(s); $("stationName").value = ""; select("station", s.id); save(); render();
-  });
-  $("stationName").addEventListener("keydown", function (e) { if (e.key === "Enter") $("btnAddStation").click(); });
-  $("editStationName").addEventListener("input", function () { var s = findStation(selected.id); if (s) { s.name = this.value; save(); renderLists(); stage.querySelectorAll(".rosen-station").forEach(function (el) { if (el.getAttribute("data-station-id") === s.id) el.textContent = s.name; }); } });
-  ["editStationX", "editStationY"].forEach(function (id) {
-    $(id).addEventListener("change", function () {
-      var s = findStation(selected.id); if (!s) return;
-      s.x = Number($("editStationX").value) || 0; s.y = Number($("editStationY").value) || 0; save(); render();
-    });
-  });
-  $("btnDeleteStation").addEventListener("click", function () {
-    var s = findStation(selected.id); if (!s) return;
-    data.stations = data.stations.filter(function (x) { return x.id !== s.id; });
-    data.lines.forEach(function (l) { l.stationIds = l.stationIds.filter(function (id) { return id !== s.id; }); });
-    select(null, null); save(); render();
-  });
-
-  $("btnAddLine").addEventListener("click", function () {
-    var name = $("lineName").value.trim() || "新しい路線";
-    var l = { id: uid("l"), name: name, color: $("lineColor").value, width: 10, closed: false, stationIds: [] };
-    data.lines.push(l); $("lineName").value = ""; select("line", l.id); picking = true; save(); render();
-  });
-  $("editLineName").addEventListener("input", function () { var l = findLine(selected.id); if (l) { l.name = this.value; save(); renderLists(); } });
-  $("editLineColor").addEventListener("input", function () { var l = findLine(selected.id); if (l) { l.color = this.value; save(); render(); } });
-  $("editLineWidth").addEventListener("input", function () { var l = findLine(selected.id); if (l) { l.width = Number(this.value); save(); render(); } });
-  $("editLineClosed").addEventListener("change", function () { var l = findLine(selected.id); if (l) { l.closed = this.checked; save(); render(); } });
-  $("btnPickStations").addEventListener("click", function () { picking = !picking; render(); });
-  $("btnDeleteLine").addEventListener("click", function () {
-    data.lines = data.lines.filter(function (x) { return x.id !== selected.id; });
-    select(null, null); save(); render();
-  });
-
-  $("btnAddImageUrl").addEventListener("click", function () {
-    var url = $("imageUrl").value.trim(); if (!url) return;
-    var im = { id: uid("i"), src: url, x: 800, y: 160, width: 150, alt: "画像" };
-    data.images.push(im); $("imageUrl").value = ""; select("image", im.id); save(); render();
-  });
-  $("fileImage").addEventListener("change", function () {
-    var f = this.files[0]; if (!f) return;
-    var r = new FileReader();
-    r.onload = function () {
-      var im = { id: uid("i"), src: r.result, x: 800, y: 160, width: 180, alt: f.name };
-      data.images.push(im); select("image", im.id); save(); render();
+  const connectStationToPoint = (fromId, pos) => {
+    let line = selected.type === "line" ? findLine(selected.id) : null;
+    if (line) ensureLine(line);
+    const pointNode = { type: "point", x: pos.x, y: pos.y };
+    const startNewLine = () => {
+      line = createLineForConnection();
+      line.nodes.push({ type: "station", id: fromId }, pointNode);
     };
-    r.readAsDataURL(f); this.value = "";
-  });
-  $("editImageWidth").addEventListener("input", function () { var im = findImage(selected.id); if (im) { im.width = Number(this.value); save(); render(); } });
-  $("btnDeleteImage").addEventListener("click", function () {
-    data.images = data.images.filter(function (x) { return x.id !== selected.id; });
-    select(null, null); save(); render();
+    if (!line) {
+      startNewLine();
+    } else {
+      const nodes = line.nodes;
+      const fi = stationNodeIndex(line, fromId);
+      if (fi < 0) {
+        if (nodes.length >= 2) startNewLine();
+        else if (nodes.length === 0) nodes.push({ type: "station", id: fromId }, pointNode);
+        else nodes.push({ type: "station", id: fromId }, pointNode);
+      } else if (fi === 0 && nodes.length > 1) {
+        nodes.unshift(pointNode);
+      } else if (fi === nodes.length - 1) {
+        nodes.push(pointNode);
+      } else {
+        startNewLine();
+      }
+    }
+    syncLine(line);
+    select("line", line.id);
+    picking = false;
+    pendingConnect = null;
+    save();
+    render();
+    setStatus(`${line.name}に曲げ点を追加して接続しました`);
+  };
+
+  const showConnectChoice = (clientX, clientY, fromId, pos) => {
+    closeMapMenu();
+    const fromName = findStation(fromId)?.name ?? "駅";
+    mapMenu = document.createElement("div");
+    mapMenu.className = "map-menu";
+
+    const title = document.createElement("h4");
+    title.textContent = `${fromName} から伸ばした線の先端（${pos.x}, ${pos.y}）`;
+    mapMenu.appendChild(title);
+
+    const row = document.createElement("div");
+    row.className = "row";
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.placeholder = "新しい駅名";
+    const addStationButton = document.createElement("button");
+    addStationButton.type = "button";
+    addStationButton.className = "primary";
+    addStationButton.textContent = "駅を作る";
+    addStationButton.addEventListener("click", () => {
+      const station = { id: uid("s"), name: nameInput.value.trim() || "新しい駅", x: pos.x, y: pos.y };
+      data.stations.push(station);
+      closeMapMenu();
+      connectStations(fromId, station.id);
+    });
+    nameInput.addEventListener("keydown", (ev) => { if (ev.key === "Enter") addStationButton.click(); });
+    row.append(nameInput, addStationButton);
+    mapMenu.appendChild(row);
+
+    const bendButton = document.createElement("button");
+    bendButton.type = "button";
+    bendButton.textContent = "駅は作らず、曲げ点として接続";
+    bendButton.addEventListener("click", () => {
+      closeMapMenu();
+      connectStationToPoint(fromId, pos);
+    });
+    mapMenu.appendChild(bendButton);
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.textContent = "キャンセル";
+    cancelButton.addEventListener("click", closeMapMenu);
+    mapMenu.appendChild(cancelButton);
+
+    mapMenu.style.left = `${Math.min(clientX, window.innerWidth - 250)}px`;
+    mapMenu.style.top = `${Math.min(clientY, window.innerHeight - 260)}px`;
+    document.body.appendChild(mapMenu);
+    // 離した直後に発火する click で、別のメニューや選択に化けないようにする
+    mapMenuClosedAt = Date.now();
+    nameInput.focus();
+  };
+
+  const onPortPointerDown = (ev, stationId) => {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    if (pendingConnect && pendingConnect.stationId !== stationId) {
+      const fromId = pendingConnect.stationId;
+      pendingConnect = null;
+      connectStations(fromId, stationId);
+      return;
+    }
+    if (pendingConnect?.stationId === stationId) {
+      pendingConnect = null;
+      setStatus("接続をキャンセルしました");
+      render();
+      return;
+    }
+
+    const station = findStation(stationId);
+    if (!station) return;
+    const start = { x: station.x, y: station.y };
+    const line = selected.type === "line" ? findLine(selected.id) : null;
+
+    const overlay = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    overlay.setAttribute("class", "connect-overlay");
+    overlay.setAttribute("viewBox", `0 0 ${data.width} ${data.height}`);
+    overlay.setAttribute("preserveAspectRatio", "none");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("class", "connect-wire");
+    path.setAttribute("stroke", line?.color || "#e8833a");
+    overlay.appendChild(path);
+    stage.appendChild(overlay);
+
+    let hoveredPort = null;
+    let moved = false;
+    const startClient = { x: ev.clientX, y: ev.clientY };
+    const drawWire = (clientX, clientY) => {
+      const pos = toMapCoords(clientX, clientY);
+      const bend = Math.max(40, Math.abs(pos.x - start.x) * 0.5);
+      path.setAttribute("d", `M ${start.x} ${start.y} C ${start.x + bend} ${start.y}, ${pos.x - bend} ${pos.y}, ${pos.x} ${pos.y}`);
+    };
+    drawWire(ev.clientX, ev.clientY);
+
+    const move = (e) => {
+      if (Math.hypot(e.clientX - startClient.x, e.clientY - startClient.y) > 6) moved = true;
+      drawWire(e.clientX, e.clientY);
+      const hit = document.elementFromPoint(e.clientX, e.clientY)?.closest?.(".station-port");
+      const target = hit && hit.dataset.stationId !== stationId ? hit : null;
+      if (hoveredPort && hoveredPort !== target) hoveredPort.classList.remove("port-hover");
+      hoveredPort = target;
+      hoveredPort?.classList.add("port-hover");
+    };
+    const up = (e) => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", up);
+      overlay.remove();
+      if (hoveredPort) {
+        connectStations(stationId, hoveredPort.dataset.stationId);
+        return;
+      }
+      const hitStation = document.elementFromPoint(e.clientX, e.clientY)?.closest?.(".rosen-station");
+      if (hitStation && hitStation.dataset.stationId !== stationId) {
+        connectStations(stationId, hitStation.dataset.stationId);
+        return;
+      }
+      if (!moved) {
+        pendingConnect = { stationId };
+        setStatus(`${station.name} を接続元にしました。接続先の駅のポートをクリックしてください（Escで取消）`);
+        render();
+        return;
+      }
+      showConnectChoice(e.clientX, e.clientY, stationId, toMapCoords(e.clientX, e.clientY));
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", up);
+  };
+
+  /* ---------- 一覧 ---------- */
+  const makeListItem = ({ label, isSelected, swatch, onClick }) => {
+    const li = document.createElement("li");
+    if (isSelected) li.className = "selected";
+    if (swatch) {
+      const span = document.createElement("span");
+      span.className = "swatch";
+      span.style.background = swatch;
+      li.appendChild(span);
+    }
+    const grow = document.createElement("span");
+    grow.className = "grow";
+    grow.textContent = label;
+    li.appendChild(grow);
+    li.addEventListener("click", onClick);
+    return li;
+  };
+
+  const renderLists = () => {
+    $("stationList").replaceChildren(...data.stations.map((station) =>
+      makeListItem({
+        label: station.name,
+        isSelected: selected.type === "station" && selected.id === station.id,
+        onClick: () => { select("station", station.id); render(); },
+      })));
+
+    $("lineList").replaceChildren(...data.lines.map((line) => {
+      const stationCount = RosenCreator.lineNodes(line).filter((n) => n.type === "station").length;
+      return makeListItem({
+        label: `${line.name}（${stationCount}駅）`,
+        isSelected: selected.type === "line" && selected.id === line.id,
+        swatch: line.color,
+        onClick: () => { select("line", line.id); render(); },
+      });
+    }));
+
+    $("imageList").replaceChildren(...data.images.map((image, index) =>
+      makeListItem({
+        label: image.alt || `画像 ${index + 1}`,
+        isSelected: selected.type === "image" && selected.id === image.id,
+        onClick: () => { select("image", image.id); render(); },
+      })));
+  };
+
+  /* ---------- 編集パネル ---------- */
+  const renderEditors = () => {
+    const station = selected.type === "station" ? findStation(selected.id) : null;
+    $("stationEditor").hidden = !station;
+    if (station) {
+      $("editStationName").value = station.name;
+      $("editStationX").value = station.x;
+      $("editStationY").value = station.y;
+    }
+
+    const line = selected.type === "line" ? findLine(selected.id) : null;
+    $("lineEditor").hidden = !line;
+    if (line) {
+      ensureLine(line);
+      $("editLineName").value = line.name;
+      $("editLineColor").value = line.color;
+      $("editLineWidth").value = line.width || 10;
+      $("editLineClosed").checked = Boolean(line.closed);
+      $("editLineShape").value = line.shape;
+      $("editLineSmooth").value = line.smoothness;
+      $("editLineStyle").value = line.style;
+      $("btnPickStations").textContent = `駅をクリックして追加する： ${picking ? "ON" : "OFF"}`;
+      $("btnPickStations").classList.toggle("active", picking);
+
+      $("lineStations").replaceChildren(...line.nodes.map((node, index) => {
+        const li = document.createElement("li");
+        const grow = document.createElement("span");
+        grow.className = "grow";
+        grow.textContent = node.type === "station"
+          ? (findStation(node.id)?.name ?? "(削除済み)")
+          : `曲げ点（${node.x}, ${node.y}）`;
+        li.appendChild(grow);
+
+        for (const [label, delta] of [["↑", -1], ["↓", 1]]) {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.textContent = label;
+          button.addEventListener("click", () => {
+            const j = index + delta;
+            if (j < 0 || j >= line.nodes.length) return;
+            [line.nodes[index], line.nodes[j]] = [line.nodes[j], line.nodes[index]];
+            syncLine(line);
+            save();
+            render();
+          });
+          li.appendChild(button);
+        }
+        const remove = document.createElement("button");
+        remove.type = "button";
+        remove.textContent = "外す";
+        remove.addEventListener("click", () => {
+          line.nodes.splice(index, 1);
+          syncLine(line);
+          save();
+          render();
+        });
+        li.appendChild(remove);
+        return li;
+      }));
+    }
+
+    const image = selected.type === "image" ? findImage(selected.id) : null;
+    $("imageEditor").hidden = !image;
+    if (image) $("editImageWidth").value = image.width;
+  };
+
+  /* ---------- 左パネルの折りたたみ ---------- */
+  const PANEL_KEY = "rosenCreatorPanelCollapsed";
+  let collapsedSections = [];
+  try { collapsedSections = JSON.parse(localStorage.getItem(PANEL_KEY) || "[]"); } catch { collapsedSections = []; }
+  document.querySelectorAll(".panel section").forEach((section) => {
+    const h2 = section.querySelector(":scope > h2");
+    if (!h2) return;
+    const key = h2.textContent.trim();
+    section.classList.add("collapsible");
+    if (collapsedSections.includes(key)) section.classList.add("collapsed");
+    h2.title = "クリックで開いたり閉じたりできます";
+    h2.addEventListener("click", () => {
+      section.classList.toggle("collapsed");
+      const now = [...document.querySelectorAll(".panel section.collapsed")]
+        .map((s) => s.querySelector(":scope > h2")?.textContent.trim())
+        .filter(Boolean);
+      localStorage.setItem(PANEL_KEY, JSON.stringify(now));
+    });
   });
 
-  $("btnSample").addEventListener("click", function () { data = sampleData(); select(null, null); $("mapBg").value = data.background; save(); render(); });
-  $("btnExportJson").addEventListener("click", function () {
-    var blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "rosen-data.json"; a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  /* ---------- イベント: マップ / 駅 ---------- */
+  $("mapBg").value = data.background || "#f7f3e8";
+  $("mapBg").addEventListener("input", (ev) => { data.background = ev.target.value; save(); render(); });
+
+  $("btnAddStation").addEventListener("click", () => {
+    const name = $("stationName").value.trim();
+    if (!name) return;
+    const station = {
+      id: uid("s"), name,
+      x: 120 + Math.round(Math.random() * 120),
+      y: 120 + Math.round(Math.random() * 120),
+    };
+    data.stations.push(station);
+    $("stationName").value = "";
+    select("station", station.id);
+    save();
+    render();
   });
-  $("fileImportJson").addEventListener("change", function () {
-    var f = this.files[0]; if (!f) return;
-    f.text().then(function (t) {
-      try { var d = JSON.parse(t); if (!d.stations || !d.lines) throw new Error("形式が違います"); data = d; select(null, null); save(); render(); }
-      catch (e) { alert("JSONを読み込めませんでした: " + e.message); }
+  $("stationName").addEventListener("keydown", (ev) => {
+    if (ev.key === "Enter") $("btnAddStation").click();
+  });
+  $("editStationName").addEventListener("input", (ev) => {
+    const station = findStation(selected.id);
+    if (!station) return;
+    station.name = ev.target.value;
+    save();
+    renderLists();
+    stage.querySelectorAll(".rosen-station").forEach((el) => {
+      if (el.dataset.stationId === station.id) el.textContent = station.name;
     });
-    this.value = "";
+  });
+  const applyStationCoords = () => {
+    const station = findStation(selected.id);
+    if (!station) return;
+    station.x = Number($("editStationX").value) || 0;
+    station.y = Number($("editStationY").value) || 0;
+    save();
+    render();
+  };
+  $("editStationX").addEventListener("change", applyStationCoords);
+  $("editStationY").addEventListener("change", applyStationCoords);
+  $("btnDeleteStation").addEventListener("click", () => {
+    const station = findStation(selected.id);
+    if (!station) return;
+    data.stations = data.stations.filter((s) => s.id !== station.id);
+    data.lines.forEach((line) => {
+      ensureLine(line);
+      line.nodes = line.nodes.filter((node) => !(node.type === "station" && node.id === station.id));
+      syncLine(line);
+    });
+    select(null, null);
+    save();
+    render();
+  });
+
+  /* ---------- イベント: 路線 ---------- */
+  $("btnAddLine").addEventListener("click", () => {
+    const line = {
+      id: uid("l"),
+      name: $("lineName").value.trim() || "新しい路線",
+      color: $("lineColor").value,
+      width: 10, closed: false,
+      shape: "smooth", smoothness: 50, style: "solid",
+      nodes: [], stationIds: [],
+    };
+    data.lines.push(line);
+    $("lineName").value = "";
+    select("line", line.id);
+    picking = true;
+    save();
+    render();
+  });
+  const currentLine = () => findLine(selected.id);
+  $("editLineName").addEventListener("input", (ev) => { const l = currentLine(); if (l) { l.name = ev.target.value; save(); renderLists(); } });
+  $("editLineColor").addEventListener("input", (ev) => { const l = currentLine(); if (l) { l.color = ev.target.value; save(); render(); } });
+  $("editLineWidth").addEventListener("input", (ev) => { const l = currentLine(); if (l) { l.width = Number(ev.target.value); save(); render(); } });
+  $("editLineClosed").addEventListener("change", (ev) => { const l = currentLine(); if (l) { l.closed = ev.target.checked; save(); render(); } });
+  $("editLineShape").addEventListener("change", (ev) => { const l = currentLine(); if (l) { l.shape = ev.target.value; save(); render(); } });
+  $("editLineSmooth").addEventListener("input", (ev) => { const l = currentLine(); if (l) { l.smoothness = Number(ev.target.value); save(); render(); } });
+  $("editLineStyle").addEventListener("change", (ev) => { const l = currentLine(); if (l) { l.style = ev.target.value; save(); render(); } });
+  $("btnPickStations").addEventListener("click", () => { picking = !picking; render(); });
+  $("btnDeleteLine").addEventListener("click", () => {
+    data.lines = data.lines.filter((l) => l.id !== selected.id);
+    select(null, null);
+    save();
+    render();
+  });
+
+  /* ---------- イベント: 画像 ---------- */
+  $("btnAddImageUrl").addEventListener("click", () => {
+    const url = $("imageUrl").value.trim();
+    if (!url) return;
+    const image = { id: uid("i"), src: url, x: pendingImagePos?.x ?? 800, y: pendingImagePos?.y ?? 160, width: 150, alt: "画像" };
+    pendingImagePos = null;
+    data.images.push(image);
+    $("imageUrl").value = "";
+    select("image", image.id);
+    save();
+    render();
+  });
+  $("fileImage").addEventListener("change", (ev) => {
+    const [file] = ev.target.files;
+    if (!file) return;
+    const reader = new FileReader();
+    reader.addEventListener("load", () => {
+      const image = { id: uid("i"), src: reader.result, x: pendingImagePos?.x ?? 800, y: pendingImagePos?.y ?? 160, width: 180, alt: file.name };
+      pendingImagePos = null;
+      data.images.push(image);
+      select("image", image.id);
+      save();
+      render();
+    });
+    reader.readAsDataURL(file);
+    ev.target.value = "";
+  });
+  $("editImageWidth").addEventListener("input", (ev) => {
+    const image = findImage(selected.id);
+    if (image) { image.width = Number(ev.target.value); save(); render(); }
+  });
+  $("btnDeleteImage").addEventListener("click", () => {
+    data.images = data.images.filter((i) => i.id !== selected.id);
+    select(null, null);
+    save();
+    render();
+  });
+
+  /* ---------- イベント: データ ---------- */
+  $("btnSample").addEventListener("click", () => {
+    data = sampleData();
+    select(null, null);
+    $("mapBg").value = data.background;
+    save();
+    render();
+  });
+  $("btnExportJson").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const anchor = document.createElement("a");
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = "rosen-data.json";
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(anchor.href), 2000);
+  });
+  $("fileImportJson").addEventListener("change", async (ev) => {
+    const [file] = ev.target.files;
+    if (!file) return;
+    try {
+      const imported = JSON.parse(await file.text());
+      if (!imported.stations || !imported.lines) throw new Error("形式が違います");
+      data = imported;
+      data.lines.forEach(ensureLine);
+      select(null, null);
+      save();
+      render();
+    } catch (error) {
+      alert(`JSONを読み込めませんでした: ${error.message}`);
+    }
+    ev.target.value = "";
+  });
+
+  /* ---------- マップの何もない所をクリック -> 挿入メニュー ---------- */
+  const closeMapMenu = () => {
+    mapMenu?.remove();
+    mapMenu = null;
+  };
+
+  const toMapCoords = (clientX, clientY) => {
+    const mapEl = stage.classList.contains("rosen-map") ? stage : stage.querySelector(".rosen-map");
+    const rect = mapEl.getBoundingClientRect();
+    return {
+      x: Math.round(clamp(((clientX - rect.left) / rect.width) * data.width, 0, data.width)),
+      y: Math.round(clamp(((clientY - rect.top) / rect.height) * data.height, 0, data.height)),
+    };
+  };
+
+  const showMapMenu = (clientX, clientY) => {
+    closeMapMenu();
+    const pos = toMapCoords(clientX, clientY);
+    const line = selected.type === "line" ? findLine(selected.id) : null;
+
+    mapMenu = document.createElement("div");
+    mapMenu.className = "map-menu";
+
+    const title = document.createElement("h4");
+    title.textContent = `この場所に追加（${pos.x}, ${pos.y}）`;
+    mapMenu.appendChild(title);
+
+    const stationRow = document.createElement("div");
+    stationRow.className = "row";
+    const nameInput = document.createElement("input");
+    nameInput.type = "text";
+    nameInput.placeholder = "駅名";
+    const addStationButton = document.createElement("button");
+    addStationButton.type = "button";
+    addStationButton.className = "primary";
+    addStationButton.textContent = "駅を追加";
+    const addStation = () => {
+      const station = { id: uid("s"), name: nameInput.value.trim() || "新しい駅", x: pos.x, y: pos.y };
+      data.stations.push(station);
+      select("station", station.id);
+      closeMapMenu();
+      save();
+      render();
+    };
+    addStationButton.addEventListener("click", addStation);
+    nameInput.addEventListener("keydown", (ev) => { if (ev.key === "Enter") addStation(); });
+    stationRow.append(nameInput, addStationButton);
+    mapMenu.appendChild(stationRow);
+
+    const addMenuButton = (label, handler) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = label;
+      button.addEventListener("click", handler);
+      mapMenu.appendChild(button);
+      return button;
+    };
+
+    addMenuButton(
+      line ? `曲げ点として「${line.name}」に追加` : "曲げ点として路線に追加（路線を選択中のみ）",
+      () => {
+        if (!line) return;
+        ensureLine(line);
+        const points = RosenCreator.resolveLinePoints(data, line);
+        const segIndex = points.length >= 2
+          ? RosenCreator.nearestSegmentIndex(points, Boolean(line.closed), pos)
+          : line.nodes.length - 1;
+        line.nodes.splice(segIndex + 1, 0, { type: "point", x: pos.x, y: pos.y });
+        syncLine(line);
+        closeMapMenu();
+        save();
+        render();
+      },
+    ).disabled = !line;
+
+    addMenuButton("ここから新しい路線を開始", () => {
+      const newLine = {
+        id: uid("l"),
+        name: $("lineName").value.trim() || "新しい路線",
+        color: $("lineColor").value,
+        width: 10, closed: false,
+        shape: "smooth", smoothness: 50, style: "solid",
+        nodes: [{ type: "point", x: pos.x, y: pos.y }],
+        stationIds: [],
+      };
+      data.lines.push(newLine);
+      select("line", newLine.id);
+      picking = true;
+      closeMapMenu();
+      save();
+      render();
+    });
+
+    addMenuButton("ここに画像を挿入（次に追加する画像の位置）", () => {
+      pendingImagePos = pos;
+      closeMapMenu();
+      $("imageUrl").placeholder = `画像URL（${pos.x}, ${pos.y}）に配置します`;
+      $("imageUrl").focus();
+    });
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.textContent = "閉じる";
+    closeButton.addEventListener("click", closeMapMenu);
+    mapMenu.appendChild(closeButton);
+
+    mapMenu.style.left = `${Math.min(clientX, window.innerWidth - 250)}px`;
+    mapMenu.style.top = `${Math.min(clientY, window.innerHeight - 320)}px`;
+    document.body.appendChild(mapMenu);
+    nameInput.focus();
+  };
+
+  const isInteractiveTarget = (target) =>
+    target.closest(".rosen-station, .rosen-image, .bend-handle, .seg-add, .map-menu");
+
+  stage.addEventListener("click", (ev) => {
+    if (Date.now() - mapMenuClosedAt < 400) return;
+    if (isInteractiveTarget(ev.target)) return;
+    showMapMenu(ev.clientX, ev.clientY);
+  });
+  stage.addEventListener("contextmenu", (ev) => {
+    if (Date.now() - mapMenuClosedAt < 400) return;
+    if (isInteractiveTarget(ev.target)) return;
+    ev.preventDefault();
+    showMapMenu(ev.clientX, ev.clientY);
+  });
+  // メニューが開いている間は、メニュー外のクリックで閉じる (そのクリックで開き直さない)
+  document.addEventListener("pointerdown", (ev) => {
+    if (mapMenu && !mapMenu.contains(ev.target)) {
+      closeMapMenu();
+      mapMenuClosedAt = Date.now();
+    }
+  }, true);
+  document.addEventListener("keydown", (ev) => {
+    if (ev.key === "Escape") {
+      closeMapMenu();
+      if (pendingConnect) {
+        pendingConnect = null;
+        setStatus("接続をキャンセルしました");
+        render();
+      }
+    }
   });
 
   /* ---------- 埋め込みコード (iframeなし・自己完結) ---------- */
-  function buildEmbed(cssText, jsText) {
-    var id = "rosen-embed-1";
-    var parts = [];
-    parts.push('<div id="' + id + '"></div>');
-    if (cssText) parts.push("<style>\n" + cssText + "\n</style>");
-    else parts.push('<link rel="stylesheet" href="rosen.css">');
-    if (jsText) parts.push("<scr"+"ipt>\n" + jsText + "\n<\/script>");
-    else parts.push('<scr"+"ipt src="rosen.js"><\/script>');
-    parts.push("<scr"+"ipt>\nRosenCreator.render(document.getElementById('" + id + "'), " + JSON.stringify(data) + ");\n<\/script>");
-    return parts.join("\n");
-  }
-  $("btnEmbed").addEventListener("click", function () {
+  const buildEmbed = (cssText, jsText) => {
+    const id = "rosen-embed-1";
+    return [
+      `<div id="${id}"></div>`,
+      cssText ? `<style>\n${cssText}\n</style>` : '<link rel="stylesheet" href="rosen.css">',
+      jsText ? `<scr"+"ipt>\n${jsText}\n<\/script>` : '<scr"+"ipt src="rosen.js"><\/script>',
+      `<scr"+"ipt>\nRosenCreator.render(document.getElementById('${id}'), ${JSON.stringify(data)});\n<\/script>`,
+    ].join("\n");
+  };
+
+  $("btnEmbed").addEventListener("click", async () => {
     $("embedBox").hidden = false;
     if (window.__ROSEN_CSS__ && window.__ROSEN_JS__) {
       $("embedCode").value = buildEmbed(window.__ROSEN_CSS__, window.__ROSEN_JS__);
-      $("embedBox").scrollIntoView({ behavior: "smooth", block: "nearest" });
-      return;
+    } else {
+      const fetchText = async (url) => {
+        try { return await (await fetch(url)).text(); } catch { return null; }
+      };
+      const [cssText, jsText] = await Promise.all([fetchText("rosen.css"), fetchText("rosen.js")]);
+      $("embedCode").value = buildEmbed(cssText, jsText);
     }
-    Promise.all([
-      fetch("rosen.css").then(function (r) { return r.text(); }).catch(function () { return null; }),
-      fetch("rosen.js").then(function (r) { return r.text(); }).catch(function () { return null; })
-    ]).then(function (res) {
-      $("embedCode").value = buildEmbed(res[0], res[1]);
-      $("embedBox").scrollIntoView({ behavior: "smooth", block: "nearest" });
-    });
+    $("embedBox").scrollIntoView({ behavior: "smooth", block: "nearest" });
   });
-  $("btnCopyEmbed").addEventListener("click", function () {
+  $("btnCopyEmbed").addEventListener("click", async () => {
     $("embedCode").select();
-    var done = function () { $("copyResult").textContent = "コピーしました。表示したいページのHTMLに貼ってください。"; };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText($("embedCode").value).then(done, function () { document.execCommand("copy"); done(); });
-    else { document.execCommand("copy"); done(); }
+    try {
+      await navigator.clipboard.writeText($("embedCode").value);
+    } catch {
+      document.execCommand("copy");
+    }
+    $("copyResult").textContent = "コピーしました。表示したいページのHTMLに貼ってください。";
   });
-  $("btnDownloadEmbed").addEventListener("click", function () {
-    var html = "<!DOCTYPE html>\n<html lang=\"ja\"><head><meta charset=\"UTF-8\"><title>Rosen Embed</title></head><body>\n" + $("embedCode").value + "\n</body></html>";
-    var blob = new Blob([html], { type: "text/html" });
-    var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "embed.html"; a.click();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 2000);
+  $("btnDownloadEmbed").addEventListener("click", () => {
+    const html = `<!DOCTYPE html>\n<html lang="ja"><head><meta charset="UTF-8"><title>Rosen Embed</title></head><body>\n${$("embedCode").value}\n</body></html>`;
+    const blob = new Blob([html], { type: "text/html" });
+    const anchor = document.createElement("a");
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = "embed.html";
+    anchor.click();
+    setTimeout(() => URL.revokeObjectURL(anchor.href), 2000);
   });
-  $("btnCloseEmbed").addEventListener("click", function () { $("embedBox").hidden = true; });
+  $("btnCloseEmbed").addEventListener("click", () => { $("embedBox").hidden = true; });
 
   render();
 })();
